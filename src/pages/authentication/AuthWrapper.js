@@ -10,7 +10,7 @@ const useStyles = makeStyles((theme) => ({
   root: {
     height: '100vh',
     backgroundImage: `url(${image})`,
-    backgroundRepeat: 'no-repeat',
+    backgroundRepeat: 'repeat',
     backgroundPosition: 'center',
     backgroundSize: 'cover',
     backgroundColor: theme.palette.type === 'light' ? theme.palette.grey[50] : theme.palette.grey[900],

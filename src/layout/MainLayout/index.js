@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import { Box, Toolbar, useMediaQuery } from '@mui/material';
 
@@ -11,35 +11,35 @@ import navigation from 'menu-items';
 import Breadcrumbs from 'components/@extended/Breadcrumbs';
 
 import { openDrawer } from 'store/reducers/menu';
-
+const accessToken = localStorage.getItem('accesstoken');
 const MainLayout = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
   const matchDownLG = useMediaQuery(theme.breakpoints.down('lg'));
   const dispatch = useDispatch();
 
   const { drawerOpen } = useSelector((state) => state.menu);
 
-  // drawer toggler
   const [open, setOpen] = useState(drawerOpen);
   const handleDrawerToggle = () => {
     setOpen(!open);
     dispatch(openDrawer({ drawerOpen: !open }));
   };
 
-  // set media wise responsive drawer
   useEffect(() => {
     setOpen(!matchDownLG);
     dispatch(openDrawer({ drawerOpen: !matchDownLG }));
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matchDownLG]);
-
+  useEffect(() => {
+    if (!accessToken) {
+      navigate('/login');
+    }
+  }, [accessToken]);
   useEffect(() => {
     if (open !== drawerOpen) setOpen(drawerOpen);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [drawerOpen]);
 
-  return (
+  return accessToken ? (
     <Box sx={{ display: 'flex', width: '100%' }}>
       <Header open={open} handleDrawerToggle={handleDrawerToggle} />
       <Drawer open={open} handleDrawerToggle={handleDrawerToggle} />
@@ -49,6 +49,8 @@ const MainLayout = () => {
         <Outlet />
       </Box>
     </Box>
+  ) : (
+    navigate('/login')
   );
 };
 

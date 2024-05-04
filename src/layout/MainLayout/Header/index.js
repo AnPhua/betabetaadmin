@@ -4,14 +4,10 @@ import PropTypes from 'prop-types';
 import { useTheme } from '@mui/material/styles';
 import { AppBar, IconButton, Toolbar, useMediaQuery } from '@mui/material';
 
-// project import
 import AppBarStyled from './AppBarStyled';
 import HeaderContent from './HeaderContent';
 
-// assets
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
-
-// ==============================|| MAIN LAYOUT - HEADER ||============================== //
 
 const Header = ({ open, handleDrawerToggle }) => {
   const theme = useTheme();
@@ -20,7 +16,6 @@ const Header = ({ open, handleDrawerToggle }) => {
   const iconBackColor = 'grey.100';
   const iconBackColorOpen = 'grey.200';
 
-  // common header
   const mainHeader = (
     <Toolbar>
       <IconButton

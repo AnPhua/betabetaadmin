@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { loginUser } from 'services/controller/AuthController';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
   Button,
@@ -20,7 +20,6 @@ import {
 
 import * as Yup from 'yup';
 import { Formik } from 'formik';
-
 import AnimateButton from 'components/@extended/AnimateButton';
 
 import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
@@ -30,6 +29,14 @@ const AuthLogin = () => {
   const [username, setUserName] = React.useState();
   const [password, setPassword] = React.useState();
   const [showPassword, setShowPassword] = React.useState(false);
+  const currentUser = useSelector((state) => state.auth.login.currentUser);
+  const accessToken = currentUser ? currentUser.accessToken : null;
+
+  if (accessToken) {
+    localStorage.setItem('accesstoken', accessToken);
+  } else {
+    localStorage.removeItem('accesstoken');
+  }
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
   };
@@ -50,8 +57,8 @@ const AuthLogin = () => {
     <>
       <Formik
         initialValues={{
-          username: 'abcd',
-          password: '123456',
+          username: '',
+          password: '',
           submit: null
         }}
         validationSchema={Yup.object().shape({

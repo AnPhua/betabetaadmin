@@ -21,9 +21,7 @@ const ComponentSkeleton = ({ children }) => {
       secondary={<Skeleton animation="wave" variant="circular" width={24} height={24} />}
     >
       <Stack spacing={1}>
-        <Skeleton />
         <Skeleton sx={{ height: 64 }} animation="wave" variant="rectangular" />
-        <Skeleton />
         <Skeleton />
       </Stack>
     </MainCard>

@@ -12,7 +12,7 @@ const loginUser = async (login, dispatch, navigate) => {
         message: 'Thành Công',
         description: 'Đăng Nhập Thành Công!'
       });
-      navigate('/');
+      navigate('/main');
     }
   } catch (error) {
     if (error.response && error.response.status === 400) {
