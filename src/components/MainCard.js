@@ -4,8 +4,6 @@ import { forwardRef } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { Card, CardContent, CardHeader, Divider, Typography } from '@mui/material';
 
-import Highlighter from './third-party/Highlighter';
-
 const headerSX = {
   p: 2.5,
   '& .MuiCardHeader-action': { m: '0px auto', alignSelf: 'center' }
@@ -47,9 +45,6 @@ const MainCard = forwardRef(
         {codeHighlight && (
           <>
             <Divider sx={{ borderStyle: 'dashed' }} />
-            <Highlighter codeHighlight={codeHighlight} main>
-              {children}
-            </Highlighter>
           </>
         )}
       </Card>

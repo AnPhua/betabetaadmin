@@ -4,10 +4,10 @@ const utilities = {
   type: 'group',
   children: [
     {
-      id: 'util-shadow',
-      title: 'Shadow',
+      id: 'myBanner',
+      title: 'Banner',
       type: 'item',
-      url: 'shadow'
+      url: 'banner'
     },
     {
       id: 'mynew',

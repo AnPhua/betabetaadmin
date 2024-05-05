@@ -4,7 +4,7 @@ import { lazy } from 'react';
 import Loadable from 'components/Loadable';
 import MainLayout from 'layout/MainLayout';
 
-const Shadow = Loadable(lazy(() => import('pages/components-overview/Shadow')));
+const Banner = Loadable(lazy(() => import('pages/components-overview/Banner')));
 const New = Loadable(lazy(() => import('pages/components-overview/New')));
 
 const MainRoutes = {
@@ -12,8 +12,8 @@ const MainRoutes = {
   element: <MainLayout />,
   children: [
     {
-      path: 'shadow',
-      element: <Shadow />
+      path: 'banner',
+      element: <Banner />
     },
     {
       path: 'new',
