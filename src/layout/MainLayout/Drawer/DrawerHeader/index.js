@@ -1,18 +1,20 @@
 import PropTypes from 'prop-types';
-
-// material-ui
-import { useTheme } from '@mui/material/styles';
-import { Stack } from '@mui/material';
-
-// project import
+import { Stack, Typography } from '@mui/material';
+import MainCard from '../../../../components/MainCard';
 import DrawerHeaderStyled from './DrawerHeaderStyled';
+import ad from '../../../../assets/images/svg/administrator.svg';
 
 const DrawerHeader = ({ open }) => {
-  const theme = useTheme();
-
   return (
-    <DrawerHeaderStyled theme={theme} open={open}>
-      <Stack direction="row" spacing={1} alignItems="center"></Stack>
+    <DrawerHeaderStyled open={open}>
+      <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
+        <MainCard border={false}>
+          <Stack spacing={0} justifyContent="center" alignItems="center" textAlign="center">
+            <img src={ad} alt="adminstrator" />
+            <Typography variant="subtitle1">ADMINISTRATOR</Typography>
+          </Stack>
+        </MainCard>
+      </Stack>
     </DrawerHeaderStyled>
   );
 };

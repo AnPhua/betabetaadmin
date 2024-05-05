@@ -1,17 +1,18 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import PropTypes from 'prop-types';
 import { useRef, useState, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
 // material-ui
 import { useTheme } from '@mui/material/styles';
 import { Avatar, Box, ButtonBase, CardContent, ClickAwayListener, Grid, Paper, Popper, Stack, Tab, Tabs, Typography } from '@mui/material';
-import { notification } from 'antd';
+//import { notification } from 'antd';
 import MainCard from 'components/MainCard';
 import Transitions from 'components/@extended/Transitions';
 import ProfileTab from './ProfileTab';
-import { Modal } from 'antd';
+//import { Modal } from 'antd';
 import avatarn from 'assets/images/users/avatar-n.jpg';
 import { UserOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+//import { useNavigate } from 'react-router-dom';
 function TabPanel({ children, value, index, ...other }) {
   return (
     <div role="tabpanel" hidden={value !== index} id={`profile-tabpanel-${index}`} aria-labelledby={`profile-tab-${index}`} {...other}>
@@ -34,33 +35,10 @@ function a11yProps(index) {
 }
 
 const accessToken = localStorage.getItem('accesstoken');
-const Profile = () => {
-  const [openmodal, setOpenmodal] = useState(false);
-  const [confirmLoading, setConfirmLoading] = useState(false);
-  const navigate = useNavigate();
+const Profile = ({ showModal }) => {
   const theme = useTheme();
   const [username, setUserName] = useState('');
   const decodedToken = jwtDecode(accessToken);
-  const handleLogout = async () => {
-    localStorage.removeItem('accesstoken');
-    setConfirmLoading(true);
-    setTimeout(() => {
-      setOpen(false);
-      setConfirmLoading(false);
-    }, 2000);
-
-    notification.success({
-      message: 'Thành Công',
-      description: 'Đăng Xuất Thành Công!'
-    });
-    navigate('/login');
-  };
-  const showModal = () => {
-    setOpenmodal(true);
-  };
-  const handleCancel = () => {
-    setOpenmodal(false);
-  };
   const anchorRef = useRef(null);
   const [open, setOpen] = useState(false);
   const handleToggle = () => {
@@ -87,9 +65,6 @@ const Profile = () => {
   }, []);
   return (
     <>
-      <Modal title="Thông Báo !" open={openmodal} onOk={handleLogout} confirmLoading={confirmLoading} onCancel={handleCancel}>
-        <p>Bạn Có Chắc Chắn Muốn Đăng Xuất Không ?</p>
-      </Modal>
       <Box sx={{ flexShrink: 0, ml: 0.75 }}>
         <ButtonBase
           sx={{

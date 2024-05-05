@@ -45,6 +45,7 @@ const AuthLogin = () => {
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
   };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     const login = {
