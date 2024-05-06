@@ -1,26 +1,17 @@
 import axios from '../Customize-axios';
 import { notification } from 'antd';
-import queryString from 'query-string';
-const GetAllBanners = () => {
-  return axios.get('api/admin/GetAllBanners');
+const GetAllBannersNoPagination = async () => {
+  return axios.get(`https://localhost:7067/api/admin/GetAllBannersNoPagination`);
 };
 const token = localStorage.getItem('accesstoken');
-const CreateBanner = async (imageUrl, title) => {
+const CreateBanner = async (formData) => {
   try {
-    const queryParams = queryString.stringify({
-      ImageUrl: imageUrl,
-      Title: title
-    });
-
-    const res = await axios.post(
-      `api/admin/CreateBanner?${queryParams}`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+    const res = await axios.post(`api/admin/CreateBanner`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data'
       }
-    );
+    });
 
     if (res.status === 200) {
       notification.success({
@@ -35,7 +26,7 @@ const CreateBanner = async (imageUrl, title) => {
     } else {
       notification.error({
         message: 'Lỗi',
-        description: 'Đã xảy ra lỗi không xác định khi tạo banner.'
+        description: 'Đã Xảy Ra Lỗi Không Xác Định.'
       });
     }
   } catch (error) {
@@ -45,5 +36,23 @@ const CreateBanner = async (imageUrl, title) => {
     });
   }
 };
+const DeleteBanner = async (id) => {
+  try {
+    await axios.delete(`api/admin/DeleteBanner/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    notification.success({
+      message: 'Thành Công',
+      description: 'Xóa Banner Thành Công!'
+    });
+  } catch (error) {
+    notification.error({
+      message: 'Lỗi',
+      description: error.message || 'Đã xảy ra lỗi khi gọi API.'
+    });
+  }
+};
 
-export { GetAllBanners, CreateBanner };
+export { GetAllBannersNoPagination, CreateBanner, DeleteBanner };
