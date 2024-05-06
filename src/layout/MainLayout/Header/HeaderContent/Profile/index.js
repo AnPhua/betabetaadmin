@@ -34,8 +34,8 @@ function a11yProps(index) {
   };
 }
 
-const accessToken = localStorage.getItem('accesstoken');
 const Profile = ({ showModal }) => {
+  const accessToken = localStorage.getItem('accesstoken');
   const theme = useTheme();
   const [username, setUserName] = useState('');
   const decodedToken = jwtDecode(accessToken);

@@ -11,8 +11,10 @@ import navigation from 'menu-items';
 import Breadcrumbs from 'components/@extended/Breadcrumbs';
 import { notification } from 'antd';
 import { openDrawer } from 'store/reducers/menu';
-const accessToken = localStorage.getItem('accesstoken');
+import { signout } from 'store/reducers/authSlice';
+
 const MainLayout = () => {
+  const accessToken = localStorage.getItem('accesstoken');
   const theme = useTheme();
   const navigate = useNavigate();
   const matchDownLG = useMediaQuery(theme.breakpoints.down('lg'));
@@ -28,17 +30,14 @@ const MainLayout = () => {
   const [confirmLoading, setConfirmLoading] = useState(false);
   const handleLogout = () => {
     localStorage.removeItem('accesstoken');
-    window.location.reload();
-    setTimeout(() => {
-      setOpenmodal(false);
-      setConfirmLoading(false);
-    }, 2000);
+    dispatch(signout());
+    setOpenmodal(false);
+    setConfirmLoading(false);
 
     notification.success({
       message: 'Thành Công',
       description: 'Đăng Xuất Thành Công!'
     });
-    navigate('/login');
   };
   const showModal = () => {
     setOpenmodal(true);
@@ -50,11 +49,13 @@ const MainLayout = () => {
     setOpen(!matchDownLG);
     dispatch(openDrawer({ drawerOpen: !matchDownLG }));
   }, [matchDownLG]);
+
   useEffect(() => {
     if (!accessToken) {
       navigate('/login');
     }
   }, [accessToken, navigate]);
+
   useEffect(() => {
     if (open !== drawerOpen) setOpen(drawerOpen);
   }, [drawerOpen]);

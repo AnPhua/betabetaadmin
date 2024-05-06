@@ -2,7 +2,7 @@ import { loginStart, loginSuccess, loginFailed } from '../../store/reducers/auth
 import axios from '../Customize-axios';
 import { notification } from 'antd';
 
-const loginUser = async (login, dispatch, navigate) => {
+const loginUser = async (login, dispatch, navigateToHome) => {
   dispatch(loginStart());
   try {
     const res = await axios.post('api/auth/loginstaff', login);
@@ -12,8 +12,8 @@ const loginUser = async (login, dispatch, navigate) => {
         message: 'Thành Công',
         description: 'Đăng Nhập Thành Công!'
       });
-      navigate('/main');
-      window.location.reload();
+      navigateToHome('/main');
+      //window.location.reload();
     }
   } catch (error) {
     if (error.response && error.response.status === 400) {

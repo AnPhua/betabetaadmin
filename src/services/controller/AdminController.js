@@ -3,6 +3,9 @@ import { notification } from 'antd';
 const GetAllBannersNoPagination = async () => {
   return axios.get(`https://localhost:7067/api/admin/GetAllBannersNoPagination`);
 };
+const GetAllBanner = async (pageNumber, pageSize) => {
+  return axios.get(`https://localhost:7067/api/admin/GetAllBanners?PageNumber=${pageNumber}&PageSize=${pageSize}`);
+};
 const token = localStorage.getItem('accesstoken');
 const CreateBanner = async (formData) => {
   try {
@@ -55,4 +58,4 @@ const DeleteBanner = async (id) => {
   }
 };
 
-export { GetAllBannersNoPagination, CreateBanner, DeleteBanner };
+export { GetAllBannersNoPagination, CreateBanner, DeleteBanner, GetAllBanner };

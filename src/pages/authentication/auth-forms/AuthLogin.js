@@ -52,7 +52,9 @@ const AuthLogin = () => {
       username: username,
       password: password
     };
-    await loginUser(login, dispatch, navigate);
+    await loginUser(login, dispatch, (e) => {
+      navigate(e);
+    });
   };
   return (
     <>
