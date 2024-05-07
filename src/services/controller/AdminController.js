@@ -7,8 +7,9 @@ const GetAllBanner = async (pageNumber, pageSize) => {
   return axios.get(`https://localhost:7067/api/admin/GetAllBanners?PageNumber=${pageNumber}&PageSize=${pageSize}`);
 };
 const token = localStorage.getItem('accesstoken');
-const CreateBanner = async (formData) => {
+const CreateBanner = async (formData, setIsLoading) => {
   try {
+    setIsLoading(true);
     const res = await axios.post(`api/admin/CreateBanner`, formData, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -37,19 +38,33 @@ const CreateBanner = async (formData) => {
       message: 'Lỗi',
       description: error.message || 'Đã xảy ra lỗi khi gọi API.'
     });
+  } finally {
+    setIsLoading(false);
   }
 };
 const DeleteBanner = async (id) => {
   try {
-    await axios.delete(`api/admin/DeleteBanner/${id}`, {
+    const res = await axios.delete(`api/admin/DeleteBanner/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
     });
-    notification.success({
-      message: 'Thành Công',
-      description: 'Xóa Banner Thành Công!'
-    });
+    if (res.status === 400) {
+      notification.error({
+        message: 'Lỗi',
+        description: res.data.message
+      });
+    } else if (res.status === 401) {
+      notification.error({
+        message: 'Lỗi',
+        description: res.data.message
+      });
+    } else {
+      notification.success({
+        message: 'Thành Công',
+        description: 'Xóa Banner Thành Công!'
+      });
+    }
   } catch (error) {
     notification.error({
       message: 'Lỗi',

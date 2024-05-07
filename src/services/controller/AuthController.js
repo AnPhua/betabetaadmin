@@ -13,7 +13,6 @@ const loginUser = async (login, dispatch, navigateToHome) => {
         description: 'Đăng Nhập Thành Công!'
       });
       navigateToHome('/main');
-      //window.location.reload();
     }
   } catch (error) {
     if (error.response && error.response.status === 400) {

@@ -1,5 +1,6 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
-import { Grid, Typography, Box, Paper, TableCell, TableContainer, Table, TableHead, TableRow } from '@mui/material';
+import { Grid, Typography, Box, Paper, TableCell, TableContainer, Table, TableHead, TableRow, TableBody, IconButton } from '@mui/material';
 import { Image, Input, Button, Upload, notification, Modal } from 'antd';
 import MainCard from 'components/MainCard';
 import EditIcon from '@mui/icons-material/Edit';
@@ -8,16 +9,15 @@ import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 // import CancelIcon from '@mui/icons-material/Close';
 
 import { CreateBanner, DeleteBanner, GetAllBanner } from '../../services/controller/AdminController';
-import { TableBody } from '../../../node_modules/@material-ui/core/index';
-import { TablePagination } from '@mui/material';
-//import { Pagination } from '../../../node_modules/@mui/lab/index';
+import { TablePagination, Checkbox, CircularProgress } from '@mui/material';
 const ComponentBanner = () => {
   const [rows, setRows] = useState([]);
+  const [selected, setSelected] = React.useState([]);
   const [deletemodal, setDeleteModal] = useState(false);
   const [fileList, setFileList] = useState([]);
-  //const [rowModesModel, setRowModesModel] = useState({});
   const [idToDelete, setIdToDelete] = useState('');
   const [addTitle, setAddTitle] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [isComponentVisible, setIsComponentVisible] = useState(false);
   const [metadt, setMetaDt] = useState({ totalItems: 0, PageNumber: 1, PageSize: 10 });
   const onChangeforupload = ({ fileList: newFileList }) => {
@@ -52,32 +52,46 @@ const ComponentBanner = () => {
     }
     formData.append('ImageUrl', fileList[0].originFileObj);
     formData.append('Title', addTitle);
-    await CreateBanner(formData);
-    //await getAllBanners1();
-    await getAllBanners(1);
+    await CreateBanner(formData, setIsLoading);
+    await getAllBanners(metadt.PageNumber, metadt.PageSize);
     resetForm();
   };
-
+  const isSelected = (id) => selected.indexOf(id) !== -1;
   const handleDeleteClick = async () => {
     if (idToDelete) {
       await DeleteBanner(idToDelete);
-      await getAllBanners(1);
-      setDeleteModal(false); // Đóng modal sau khi xóa
-      setIdToDelete(''); // Reset idToDelete sau khi xóa
+      setDeleteModal(false);
+      setIdToDelete('');
+      await getAllBanners(1, metadt.PageSize);
     }
   };
+  const onPageChange = (e, newpage) => {
+    getAllBanners(newpage + 1, metadt.PageSize);
+  };
+  const onRowsPerPageChange = (e) => {
+    getAllBanners(1, e.target.value);
+  };
 
-  // const openDeleteModal = (id) => {
-  //   setIdToDelete(id); // Lưu id của banner cần xóa
-  //   setDeleteModal(true); // Mở modal xác nhận xóa
-  // };
+  const handleClick = (event, id) => {
+    const selectedIndex = selected.indexOf(id);
+    let newSelected = [];
 
-  // const getAllBanners1 = async () => {
-  //   let res = await GetAllBannersNoPagination();
-  //   if (res) {
-  //     setRows(res);
-  //   }
-  // };
+    if (selectedIndex === -1) {
+      newSelected = newSelected.concat(selected, id);
+    } else if (selectedIndex === 0) {
+      newSelected = newSelected.concat(selected.slice(1));
+    } else if (selectedIndex === selected.length - 1) {
+      newSelected = newSelected.concat(selected.slice(0, -1));
+    } else if (selectedIndex > 0) {
+      newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
+    }
+    setSelected(newSelected);
+  };
+  const openDeleteModal = (id) => {
+    setIdToDelete(id);
+    setDeleteModal(true);
+  };
+
   const getAllBanners = async (PageNumber, PageSize) => {
     let res = await GetAllBanner(PageNumber, PageSize);
     if (res && res.data) {
@@ -85,72 +99,6 @@ const ComponentBanner = () => {
       setMetaDt({ totalItems: res.totalItems, PageNumber: res.pageNumber, PageSize: res.pageSize });
     }
   };
-  // const columns = [
-  //   {
-  //     field: 'imageUrl',
-  //     headerName: 'Ảnh',
-  //     width: 600,
-  //     align: 'center',
-  //     headerAlign: 'center',
-  //     editable: true,
-  //     renderCell: (params) => <Image src={params.value} alt={params.value} />
-  //   },
-  //   {
-  //     field: 'title',
-  //     headerName: 'Tiêu Đề',
-  //     type: 'string',
-  //     width: 300,
-  //     align: 'left',
-  //     headerAlign: 'left',
-  //     editable: true
-  //   },
-  //   {
-  //     field: 'actions',
-  //     type: 'actions',
-  //     headerName: 'Actions',
-  //     width: 100,
-  //     cellClassName: 'actions',
-  //     getActions: ({ id }) => {
-  //       const isInEditMode = rowModesModel[id]?.mode === 'edit';
-
-  //       if (isInEditMode) {
-  //         return [
-  //           <GridActionsCellItem
-  //             key={`save_${id}`}
-  //             icon={<SaveIcon />}
-  //             label="Save"
-  //             sx={{
-  //               color: 'primary.main'
-  //             }}
-  //             //onClick={handleSaveClick(id)}
-  //           />,
-  //           <GridActionsCellItem
-  //             key={`cancel_${id}`}
-  //             icon={<CancelIcon />}
-  //             label="Cancel"
-  //             className="textPrimary"
-  //             //onClick={handleCancelClick(id)}
-  //             color="inherit"
-  //           />
-  //         ];
-  //       }
-
-  //       return [
-  //         <GridActionsCellItem key={`edit_${id}`} icon={<EditIcon />} label="Edit" className="textPrimary" color="inherit" />,
-  //         <GridActionsCellItem
-  //           key={`delete_${id}`}
-  //           icon={<DeleteIcon onClick={() => openDeleteModal(id)} />}
-  //           label="Delete"
-  //           color="inherit"
-  //         />
-  //       ];
-  //     }
-  //   }
-  // ];
-  // useEffect(() => {
-  //   console.log('A', metadt);
-  //   getAllBanners(metadt);
-  // }, [metadt.PageNumber, metadt.PageSize]);
 
   return (
     <>
@@ -159,11 +107,11 @@ const ComponentBanner = () => {
           <Grid item xs={12}>
             <MainCard title="BANNER" codeHighlight sx={{ borderWidth: 2 }}>
               <Grid container spacing={0} direction="row">
-                <div style={{ overflowY: 'auto', width: '100%' }}>
+                <div style={{ width: '100%' }}>
                   <Box
                     sx={{
-                      height: 500,
-                      width: '100%',
+                      overflowY: 'auto',
+                      height: 400,
                       '& .actions': {
                         color: 'text.secondary'
                       },
@@ -172,48 +120,70 @@ const ComponentBanner = () => {
                       }
                     }}
                   >
-                    <TableContainer component={Paper}>
-                      <Table sx={{ minWidth: 650 }} aria-label="simple table">
-                        <TableHead>
-                          <TableRow>
-                            <TableCell align="center">Ảnh</TableCell>
-                            <TableCell align="center">Title</TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {rows.map((row) => (
-                            <TableRow key={row.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                              <TableCell align="right">
-                                <Image src={row.imageUrl} alt={row.imageUrl} />
-                              </TableCell>
-                              <TableCell align="right">{row.title}</TableCell>
-                              <TableCell>
-                                <EditIcon />
-
-                                <DeleteIcon
-                                //onClick={() => openDeleteModal(id)}
-                                />
-                              </TableCell>
+                    <Paper>
+                      <TableContainer>
+                        <Table sx={{ minWidth: 600 }} aria-label="simple table">
+                          <TableHead>
+                            <TableRow>
+                              <TableCell />
+                              <TableCell align="center">Ảnh</TableCell>
+                              <TableCell align="center">Title</TableCell>
                             </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
+                          </TableHead>
+                          <TableBody>
+                            {rows.map((row, index) => {
+                              const isItemSelected = isSelected(row.id);
+                              const labelId = `enhanced-table-checkbox-${index}`;
+                              return (
+                                <TableRow
+                                  hover
+                                  onClick={(event) => handleClick(event, row.id)}
+                                  role="checkbox"
+                                  aria-checked={isItemSelected}
+                                  tabIndex={-1}
+                                  key={row.id}
+                                  selected={isItemSelected}
+                                  sx={{ cursor: 'pointer' }}
+                                >
+                                  <TableCell padding="checkbox">
+                                    <Checkbox
+                                      color="primary"
+                                      checked={isItemSelected}
+                                      inputProps={{
+                                        'aria-labelledby': labelId
+                                      }}
+                                    />
+                                  </TableCell>
+                                  <TableCell align="center">
+                                    <Image src={row.imageUrl} alt={row.imageUrl} />
+                                  </TableCell>
+                                  <TableCell align="center">{row.title}</TableCell>
+                                  <TableCell>
+                                    <IconButton aria-label="edit" size="small">
+                                      <EditIcon />
+                                    </IconButton>
+                                    <IconButton aria-label="delete" size="small">
+                                      <DeleteIcon onClick={() => openDeleteModal(row.id)} />
+                                    </IconButton>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                      <TablePagination
+                        showFirstButton="true"
+                        showLastButton="true"
+                        component="div"
+                        count={metadt.totalItems}
+                        page={metadt.PageNumber - 1}
+                        onPageChange={onPageChange}
+                        rowsPerPage={metadt.PageSize}
+                        onRowsPerPageChange={onRowsPerPageChange}
+                      />
+                    </Paper>
                   </Box>
-                </div>
-                <div>
-                  <TablePagination
-                    component="div"
-                    count={metadt.totalItems}
-                    page={metadt.PageNumber - 1}
-                    onPageChange={(e, newpage) => {
-                      getAllBanners(newpage + 1, metadt.PageSize);
-                    }}
-                    rowsPerPage={metadt.PageSize}
-                    onRowsPerPageChange={(e) => {
-                      getAllBanners(1, e.target.value);
-                    }}
-                  />
                 </div>
               </Grid>
             </MainCard>
@@ -254,9 +224,15 @@ const ComponentBanner = () => {
                     <Typography variant="subtitle1" gutterBottom alignItem="center" align="center"></Typography>
                   </Grid>
                   <Grid item xs={3}>
-                    <Button type="primary" danger onClick={addANewBanner}>
-                      Thêm
-                    </Button>
+                    {isLoading ? (
+                      <Button type="primary" danger startDecorator={<CircularProgress variant="solid" />}>
+                        Đang Thêm Banner ....
+                      </Button>
+                    ) : (
+                      <Button type="primary" danger onClick={addANewBanner}>
+                        Thêm
+                      </Button>
+                    )}
                   </Grid>
                 </Grid>
               </Grid>
