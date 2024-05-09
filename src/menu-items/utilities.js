@@ -1,6 +1,6 @@
 const utilities = {
   id: 'utilities',
-  title: 'Main',
+  title: 'AdminController',
   type: 'group',
   children: [
     {
@@ -11,9 +11,9 @@ const utilities = {
     },
     {
       id: 'mynew',
-      title: 'New',
+      title: 'Food',
       type: 'item',
-      url: 'new'
+      url: 'food'
     }
   ]
 };

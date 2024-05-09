@@ -8,7 +8,6 @@ const GetAllBanner = async (pageNumber, pageSize) => {
 const GetBannerById = async (Bannerid) => {
   return await axios.get(`https://localhost:7067/api/admin/GetBannerById/${Bannerid}`);
 };
-
 const token = localStorage.getItem('accesstoken');
 const CreateBanner = async (formData, setIsLoading) => {
   try {
@@ -52,27 +51,10 @@ const DeleteBanner = async (id) => {
         Authorization: `Bearer ${token}`
       }
     });
-    //if (res.status === 200) {
     notification.success({
       message: 'Thành Công',
       description: 'Xóa Banner Thành Công!'
     });
-    // } else if (res.status === 400) {
-    //   notification.error({
-    //     message: 'Lỗi',
-    //     description: res.data.message
-    //   });
-    // } else if (res.status === 401) {
-    //   notification.error({
-    //     message: 'Lỗi',
-    //     description: res.data.message
-    //   });
-    // } else {
-    //   notification.error({
-    //     message: 'Lỗi',
-    //     description: 'Đã Có Lỗi Xảy Ra!'
-    //   });
-    // }
   } catch (error) {
     notification.error({
       message: 'Lỗi',
@@ -160,4 +142,163 @@ const UpdateBannerHaveString = async (formData, setIsUpdating) => {
     setIsUpdating(false);
   }
 };
-export { CreateBanner, DeleteBanner, GetAllBanner, UpdateBanner, GetBannerById, UpdateBannerHaveString };
+const GetAllFoods = async (pageNumber, pageSize) => {
+  return axios.get(`https://localhost:7067/api/admin/GetAllFoods?PageNumber=${pageNumber}&PageSize=${pageSize}`);
+};
+const GetFoodById = async (foodid) => {
+  return await axios.get(`https://localhost:7067/api/admin/GetFoodById/${foodid}`);
+};
+const CreateFood = async (formData, setIsLoadingFood) => {
+  try {
+    setIsLoadingFood(true);
+    const res = await axios.post(`api/admin/CreateFood`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+
+    if (res.status === 200) {
+      notification.success({
+        message: 'Thành Công',
+        description: 'Thêm Đồ Ăn Thành Công!'
+      });
+    } else if (res.status === 400) {
+      notification.error({
+        message: 'Lỗi',
+        description: res.data.message
+      });
+    } else {
+      notification.error({
+        message: 'Lỗi',
+        description: 'Đã Xảy Ra Lỗi Không Xác Định.'
+      });
+    }
+  } catch (error) {
+    notification.error({
+      message: 'Lỗi',
+      description: error.message || 'Đã xảy ra lỗi khi gọi API.'
+    });
+  } finally {
+    setIsLoadingFood(false);
+  }
+};
+const DeleteFood = async (foodid) => {
+  try {
+    await axios.put(
+      `api/admin/DeleteFood/${foodid}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      }
+    );
+    dispatch(updateSuccess());
+    notification.success({
+      message: 'Thành Công',
+      description: 'Xóa Đồ Ăn Thành Công!'
+    });
+  } catch (error) {
+    notification.error({
+      message: 'Lỗi',
+      description: error.message || 'Đã xảy ra lỗi khi gọi API.'
+    });
+  }
+};
+const UpdateFood = async (formData, setIsUpdatingFood) => {
+  dispatch(updateStart());
+  try {
+    setIsUpdatingFood(true);
+    const res = await axios.put(`api/admin/UpdateFood`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+
+    if (res.status === 200) {
+      dispatch(updateSuccess());
+      notification.success({
+        message: 'Thành Công',
+        description: 'Cập Nhật Banner Thành Công!'
+      });
+    } else if (res.status === 400) {
+      dispatch(updateFailed());
+      notification.error({
+        message: 'Lỗi',
+        description: res.data.message
+      });
+    } else {
+      dispatch(updateFailed());
+      notification.error({
+        message: 'Lỗi',
+        description: 'Đã Xảy Ra Lỗi Không Xác Định.'
+      });
+    }
+  } catch (error) {
+    dispatch(updateFailed());
+    notification.error({
+      message: 'Lỗi',
+      description: error.message || 'Đã xảy ra lỗi khi gọi API.'
+    });
+  } finally {
+    setIsUpdatingFood(false);
+  }
+};
+const UpdateFoodHaveString = async (formData, setIsUpdatingFood) => {
+  dispatch(updateStart());
+  try {
+    setIsUpdatingFood(true);
+    const res = await axios.put(`api/admin/UpdateFoodHaveString`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+
+    if (res.status === 200) {
+      dispatch(updateSuccess());
+      notification.success({
+        message: 'Thành Công',
+        description: 'Cập Nhật Banner Thành Công!'
+      });
+    } else if (res.status === 400) {
+      dispatch(updateFailed());
+      notification.error({
+        message: 'Lỗi',
+        description: res.data.message
+      });
+    } else {
+      dispatch(updateFailed());
+      notification.error({
+        message: 'Lỗi',
+        description: 'Đã Xảy Ra Lỗi Không Xác Định.'
+      });
+    }
+  } catch (error) {
+    dispatch(updateFailed());
+    notification.error({
+      message: 'Lỗi',
+      description: error.message || 'Đã xảy ra lỗi khi gọi API.'
+    });
+  } finally {
+    setIsUpdatingFood(false);
+  }
+};
+
+export {
+  CreateBanner,
+  DeleteBanner,
+  GetAllBanner,
+  UpdateBanner,
+  GetBannerById,
+  UpdateBannerHaveString,
+  GetAllFoods,
+  GetFoodById,
+  CreateFood,
+  DeleteFood,
+  UpdateFood,
+  UpdateFoodHaveString
+};

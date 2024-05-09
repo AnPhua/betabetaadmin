@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
 import { Grid, Typography, Box, Paper, TableCell, TableContainer, Table, TableHead, TableRow, TableBody, IconButton } from '@mui/material';
-import { Image, Input, Button, Upload, notification, Modal, Spin } from 'antd';
+import { Image, Input, Button, Upload, notification, Modal, Spin, InputNumber } from 'antd';
 import MainCard from 'components/MainCard';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
@@ -9,15 +9,14 @@ import { PlusOutlined } from '@ant-design/icons';
 // import SaveIcon from '@mui/icons-material/Save';
 // import CancelIcon from '@mui/icons-material/Close';
 import {
-  CreateBanner,
-  DeleteBanner,
-  GetAllBanner,
-  GetBannerById,
-  UpdateBanner,
-  UpdateBannerHaveString
+  CreateFood,
+  DeleteFood,
+  GetAllFoods,
+  GetFoodById,
+  UpdateFood,
+  UpdateFoodHaveString
 } from '../../services/controller/AdminController';
-import { TablePagination, Checkbox, CircularProgress } from '@mui/material';
-//import ImgCrop from 'antd-img-crop';
+import { TablePagination, Checkbox } from '@mui/material';
 const getBase64 = (file) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -25,20 +24,25 @@ const getBase64 = (file) =>
     reader.onload = () => resolve(reader.result);
     reader.onerror = (error) => reject(error);
   });
-const ComponentBanner = () => {
+const ComponentFood = () => {
+  const { TextArea } = Input;
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [deletemodal, setDeleteModal] = useState(false);
   const [fileList, setFileList] = useState([]);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
-  const [fileListUpdate, setFileListUpdate] = useState([{ imageUrl: '' }]);
-  const [editTitle, setEditTitle] = useState([{ title: '' }]);
+  const [fileListUpdate, setFileListUpdate] = useState([{ image: '' }]);
+  const [editNameOfFood, setEditNameOfFood] = useState([{ nameOfFood: '' }]);
+  const [editPrice, setEditPrice] = useState([{ price: 50000 }]);
+  const [editDescription, setEditDescription] = useState([{ description: '' }]);
   const [idToDelete, setIdToDelete] = useState('');
   const [idToUpdate, setIdToUpdate] = useState('');
-  const [addTitle, setAddTitle] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [addFood, setAddFood] = useState('');
+  const [addPrice, setAddPrice] = useState(50000);
+  const [addDescription, setDescription] = useState('');
+  const [isLoadingFood, setIsLoadingFood] = useState(false);
+  const [isUpdatingFood, setIsUpdatingFood] = useState(false);
   const [isComponentVisible, setIsComponentVisible] = useState(false);
   const [metadt, setMetaDt] = useState({ totalItems: 0, PageNumber: 1, PageSize: 10 });
   const onChangeforupload = ({ fileList: newFileList }) => {
@@ -76,10 +80,10 @@ const ComponentBanner = () => {
   );
   useEffect(() => {
     setIsComponentVisible(true);
-    getAllBanners(metadt.PageNumber, metadt.PageSize);
+    getAllFoods(metadt.PageNumber, metadt.PageSize);
   }, []);
 
-  const addANewBanner = async () => {
+  const addANewFood = async () => {
     const formData = new FormData();
     if (!fileList || fileList.length === 0 || !fileList[0].originFileObj) {
       notification.error({
@@ -88,35 +92,46 @@ const ComponentBanner = () => {
       });
       return;
     }
-    if (!addTitle) {
+    if (!addFood) {
       notification.error({
         message: 'Lỗi',
-        description: 'Vui lòng nhập tiêu đề!'
+        description: 'Vui lòng nhập tên đồ ăn!'
       });
       return;
     }
-    formData.append('ImageUrl', fileList[0].originFileObj);
-    formData.append('Title', addTitle);
-    console.log(`imageUrl: ${fileList[0].originFileObj}, title: ${addTitle}`);
-    await CreateBanner(formData, setIsLoading);
-    await getAllBanners(metadt.PageNumber, metadt.PageSize);
+    if (!addDescription) {
+      notification.error({
+        message: 'Lỗi',
+        description: 'Vui lòng nhập mô tả!'
+      });
+      return;
+    }
+    formData.append('Price', addPrice);
+    formData.append('Description', addDescription);
+    formData.append('Image', fileList[0].originFileObj);
+    formData.append('NameOfFood', addFood);
+
+    await CreateFood(formData, setIsLoadingFood);
+    await getAllFoods(metadt.PageNumber, metadt.PageSize);
+    setAddPrice(50000);
+    setDescription('');
     setFileList([]);
-    setAddTitle('');
+    setAddFood('');
   };
   const isSelected = (id) => selected.indexOf(id) !== -1;
   const handleDeleteClick = async () => {
     if (idToDelete) {
-      await DeleteBanner(idToDelete);
+      await DeleteFood(idToDelete);
       setDeleteModal(false);
       setIdToDelete('');
-      await getAllBanners(1, metadt.PageSize);
+      await getAllFoods(1, metadt.PageSize);
     }
   };
   const onPageChange = (e, newpage) => {
-    getAllBanners(newpage + 1, metadt.PageSize);
+    getAllFoods(newpage + 1, metadt.PageSize);
   };
   const onRowsPerPageChange = (e) => {
-    getAllBanners(1, e.target.value);
+    getAllFoods(1, e.target.value);
   };
 
   const handleClick = (event, id) => {
@@ -141,12 +156,13 @@ const ComponentBanner = () => {
   const showDataBanner = async (id) => {
     try {
       setIdToUpdate(id);
-      const res = await GetBannerById(id);
+      const res = await GetFoodById(id);
       if (res && res.data) {
-        const { imageUrl } = res.data;
-        const { title } = res.data;
-        setFileListUpdate([{ url: imageUrl }]);
-        setEditTitle([{ title }]);
+        const { price, description, image, nameOfFood } = res.data;
+        setFileListUpdate([{ url: image }]);
+        setEditNameOfFood([{ nameOfFood: nameOfFood }]);
+        setEditPrice([{ price: price }]);
+        setEditDescription([{ description: description }]);
       }
     } catch (error) {
       console.error('Error while fetching banner by ID:', error);
@@ -163,49 +179,65 @@ const ComponentBanner = () => {
       });
       return;
     }
-    if (!editTitle) {
+    if (!editNameOfFood) {
       notification.error({
         message: 'Lỗi',
         description: 'Vui lòng nhập tiêu đề!'
       });
       return;
     }
-
-    const checkType = !!fileListUpdate[0].url;
-    formData.append('BannerId', idToUpdate);
-    formData.append('ImageUrl', checkType ? fileListUpdate[0].url : fileListUpdate[0].originFileObj);
-    formData.append('Title', editTitle[0].title);
-    if (checkType) {
-      await UpdateBannerHaveString(formData, setIsUpdating);
-    } else {
-      await UpdateBanner(formData, setIsUpdating);
+    if (!editDescription) {
+      notification.error({
+        message: 'Lỗi',
+        description: 'Vui lòng nhập tiêu đề!'
+      });
+      return;
     }
-    await getAllBanners(metadt.PageNumber, metadt.PageSize);
+    const checkType = !!fileListUpdate[0].url;
+    formData.append('FoodId', idToUpdate);
+    formData.append('Image', checkType ? fileListUpdate[0].url : fileListUpdate[0].originFileObj);
+    formData.append('NameOfFood', editNameOfFood[0].nameOfFood);
+    formData.append('Price', editPrice[0].price);
+    formData.append('Description', editDescription[0].description);
+    console.log(
+      `Image: ${checkType}, NameOfFood: ${editNameOfFood[0].nameOfFood}`,
+      `Price: ${editPrice[0].price}, Description: ${editDescription[0].description}`
+    );
+    if (checkType) {
+      await UpdateFoodHaveString(formData, setIsUpdatingFood);
+    } else {
+      await UpdateFood(formData, setIsUpdatingFood);
+    }
+    await getAllFoods(metadt.PageNumber, metadt.PageSize);
     setIdToUpdate('');
     setFileListUpdate([]);
-    setEditTitle('');
+    setEditNameOfFood('');
+    setEditDescription('');
+    setEditPrice('');
   };
-  const getAllBanners = async (PageNumber, PageSize) => {
-    let res = await GetAllBanner(PageNumber, PageSize);
+  const getAllFoods = async (PageNumber, PageSize) => {
+    let res = await GetAllFoods(PageNumber, PageSize);
     if (res && res.data) {
       setRows(res.data);
       setMetaDt({ totalItems: res.totalItems, PageNumber: res.pageNumber, PageSize: res.pageSize });
     }
   };
-
+  const formatPrice = (price) => {
+    return price.toLocaleString('vi-VN', { currency: 'VND' });
+  };
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         {isComponentVisible && (
           <Grid container spacing={3}>
-            {isLoading ? (
+            {isLoadingFood ? (
               <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center' }}>
-                <Spin spinning={isLoading} delay={500} />
+                <Spin spinning={isLoadingFood} delay={500} />
               </Grid>
             ) : (
               <>
                 <Grid item xs={12}>
-                  <MainCard title="BANNER" codeHighlight sx={{ borderWidth: 2 }}>
+                  <MainCard title="ĐỒ ĂN" codeHighlight sx={{ borderWidth: 2 }}>
                     <Grid container spacing={0} direction="row">
                       <div style={{ width: '100%' }}>
                         <Box
@@ -222,12 +254,14 @@ const ComponentBanner = () => {
                         >
                           <Paper>
                             <TableContainer>
-                              <Table sx={{ minWidth: 600 }} aria-label="simple table">
+                              <Table sx={{ minWidth: 800 }} aria-label="simple table">
                                 <TableHead>
                                   <TableRow>
                                     <TableCell />
                                     <TableCell align="center">Ảnh</TableCell>
-                                    <TableCell align="center">Title</TableCell>
+                                    <TableCell align="center">Tên Đồ Ăn</TableCell>
+                                    <TableCell align="center">Giá</TableCell>
+                                    <TableCell align="center">Mô Tả</TableCell>
                                   </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -254,11 +288,13 @@ const ComponentBanner = () => {
                                             }}
                                           />
                                         </TableCell>
-                                        <TableCell align="center">
-                                          <Image src={row.imageUrl} alt={row.imageUrl} />
+                                        <TableCell align="left">
+                                          <Image src={row.image} alt={row.image} />
                                         </TableCell>
-                                        <TableCell align="center">{row.title}</TableCell>
-                                        <TableCell>
+                                        <TableCell align="center">{row.nameOfFood}</TableCell>
+                                        <TableCell align="center">{formatPrice(row.price)}vnđ</TableCell>
+                                        <TableCell align="center">{row.description}</TableCell>
+                                        <TableCell align="center" sx={{ width: '10%' }}>
                                           <IconButton aria-label="edit" size="small">
                                             <EditIcon onClick={() => showDataBanner(row.id)} />
                                           </IconButton>
@@ -289,12 +325,12 @@ const ComponentBanner = () => {
                   </MainCard>
                 </Grid>
                 <Grid item xs={6}>
-                  <MainCard title="THÊM BANNER" codeHighlight sx={{ borderWidth: 2 }}>
+                  <MainCard title="THÊM ĐỒ ĂN" codeHighlight sx={{ borderWidth: 2 }}>
                     <Grid container spacing={0}>
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
                         <Grid item xs={2}>
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            ImageUrl
+                            Ảnh Đồ Ăn
                           </Typography>
                         </Grid>
                         <Grid item xs={2}>
@@ -312,11 +348,49 @@ const ComponentBanner = () => {
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
                         <Grid item xs={2}>
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Title
+                            Tên Đồ Ăn
                           </Typography>
                         </Grid>
                         <Grid item xs={3}>
-                          <Input placeholder="Title" value={addTitle} onChange={(e) => setAddTitle(e.target.value)} />
+                          <Input placeholder="Tên Đồ Ăn" value={addFood} onChange={(e) => setAddFood(e.target.value)} />
+                        </Grid>
+                      </Grid>
+                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
+                        <Grid item xs={2}>
+                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
+                            Giá
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={3}>
+                          <InputNumber
+                            placeholder="Giá"
+                            min={40000}
+                            max={1000000}
+                            defaultValue={50000}
+                            value={addPrice}
+                            onChange={(value) => setAddPrice(value)}
+                          />
+                        </Grid>
+                      </Grid>
+                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
+                        <Grid item xs={2}>
+                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
+                            Mô Tả
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={3}>
+                          <TextArea
+                            showCount
+                            maxLength={200}
+                            value={addDescription}
+                            onChange={(e) => setDescription(e.target.value)}
+                            placeholder="disable resize"
+                            style={{
+                              height: 130,
+                              width: 400,
+                              resize: 'none'
+                            }}
+                          />
                         </Grid>
                       </Grid>
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
@@ -324,27 +398,21 @@ const ComponentBanner = () => {
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center"></Typography>
                         </Grid>
                         <Grid item xs={3}>
-                          {isLoading ? (
-                            <Button type="primary" danger startDecorator={<CircularProgress variant="solid" />}>
-                              Đang Thêm Banner ....
-                            </Button>
-                          ) : (
-                            <Button type="primary" danger onClick={addANewBanner}>
-                              Thêm
-                            </Button>
-                          )}
+                          <Button type="primary" danger onClick={addANewFood}>
+                            Thêm
+                          </Button>
                         </Grid>
                       </Grid>
                     </Grid>
                   </MainCard>
                 </Grid>
                 <Grid item xs={6}>
-                  <MainCard title="CẬP NHẬT BANNER" codeHighlight sx={{ borderWidth: 2 }}>
+                  <MainCard title="CẬP NHẬT ĐỒ ĂN" codeHighlight sx={{ borderWidth: 2 }}>
                     <Grid container spacing={0}>
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
                         <Grid item xs={2}>
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            ImageUrl
+                            Ảnh Đồ Ăn
                           </Typography>
                         </Grid>
                         <Grid item xs={2}>
@@ -377,14 +445,52 @@ const ComponentBanner = () => {
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
                         <Grid item xs={2}>
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Title
+                            Tên Đồ Ăn
                           </Typography>
                         </Grid>
                         <Grid item xs={3}>
                           <Input
-                            placeholder="Title"
-                            value={editTitle[0]?.title}
-                            onChange={(e) => setEditTitle([{ title: e.target.value }])}
+                            placeholder="Tên Đồ Ăn"
+                            value={editNameOfFood[0]?.nameOfFood}
+                            onChange={(e) => setEditNameOfFood([{ nameOfFood: e.target.value }])}
+                          />
+                        </Grid>
+                      </Grid>
+                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
+                        <Grid item xs={2}>
+                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
+                            Giá
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={3}>
+                          <InputNumber
+                            placeholder="Giá"
+                            min={40000}
+                            max={1000000}
+                            defaultValue={50000}
+                            value={editPrice[0]?.price}
+                            onChange={(value) => setEditPrice([{ price: value }])}
+                          />
+                        </Grid>
+                      </Grid>
+                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
+                        <Grid item xs={2}>
+                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
+                            Mô Tả
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={3}>
+                          <TextArea
+                            showCount
+                            maxLength={200}
+                            value={editDescription[0]?.description}
+                            onChange={(e) => setEditDescription([{ description: e.target.value }])}
+                            placeholder="disable resize"
+                            style={{
+                              height: 130,
+                              width: 400,
+                              resize: 'none'
+                            }}
                           />
                         </Grid>
                       </Grid>
@@ -393,7 +499,7 @@ const ComponentBanner = () => {
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center"></Typography>
                         </Grid>
                         <Grid item xs={3}>
-                          {isUpdating ? (
+                          {isUpdatingFood ? (
                             <Button type="primary" success loading>
                               Đang Cập Nhật....
                             </Button>
@@ -413,17 +519,17 @@ const ComponentBanner = () => {
         )}
       </div>
       <Modal
-        title="Xóa Banner !"
+        title="Xóa Đồ Ăn !"
         open={deletemodal}
         onOk={handleDeleteClick}
         onCancel={() => setDeleteModal(false)}
         okText="Có"
         cancelText="Không"
       >
-        <p>Bạn Có Chắc Chắn Muốn Xóa Banner Này Không?</p>
+        <p>Bạn Có Chắc Chắn Muốn Xóa Đồ Ăn Này Không?</p>
       </Modal>
     </>
   );
 };
 
-export default ComponentBanner;
+export default ComponentFood;

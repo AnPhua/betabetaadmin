@@ -5,7 +5,7 @@ import Loadable from 'components/Loadable';
 import MainLayout from 'layout/MainLayout';
 
 const Banner = Loadable(lazy(() => import('pages/components-overview/Banner')));
-const New = Loadable(lazy(() => import('pages/components-overview/New')));
+const Food = Loadable(lazy(() => import('pages/components-overview/Food')));
 
 const MainRoutes = {
   path: '/main',
@@ -16,8 +16,8 @@ const MainRoutes = {
       element: <Banner />
     },
     {
-      path: 'new',
-      element: <New />
+      path: 'food',
+      element: <Food />
     }
   ]
 };
