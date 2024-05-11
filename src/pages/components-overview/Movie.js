@@ -11,7 +11,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import {
   CreateMovie,
   DeleteMovie,
-  GetFoodById,
+  GetMovieById,
   UpdateFood,
   UpdateFoodHaveString,
   GetAllMovieType,
@@ -19,6 +19,7 @@ import {
 } from '../../services/controller/AdminController';
 import { GetAllMovie } from 'services/controller/StaffController';
 import { TablePagination, Checkbox } from '@mui/material';
+import dayjs from 'dayjs';
 const getBase64 = (file) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -34,10 +35,7 @@ const ComponentMovie = () => {
   const [deletemodal, setDeleteModal] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
-  const [fileListUpdate, setFileListUpdate] = useState([{ image: '' }]);
-  const [editNameOfFood, setEditNameOfFood] = useState([{ nameOfFood: '' }]);
-  const [editPrice, setEditPrice] = useState([{ price: 50000 }]);
-  const [editDescription, setEditDescription] = useState([{ description: '' }]);
+
   const [idToDelete, setIdToDelete] = useState('');
   const [idToUpdate, setIdToUpdate] = useState('');
 
@@ -69,6 +67,7 @@ const ComponentMovie = () => {
   const handleSelectIsHot = (selectedOption) => {
     setAddIsHot(selectedOption === 'Có' ? 'True' : 'False');
   };
+
   const handleSelectMovieType = (selectedOption) => {
     setSelectedMovieType(selectedOption);
   };
@@ -177,12 +176,26 @@ const ComponentMovie = () => {
     setDescription('');
   };
   //////////////////////////////////////////
-
-  const [isUpdatingFood, setIsUpdatingFood] = useState(false);
-  const [isComponentVisible, setIsComponentVisible] = useState(false);
-
-  const [metadt, setMetaDt] = useState({ totalItems: 0, PageNumber: 1, PageSize: 10 });
-
+  // UPDATE MOVIE
+  const [editName, setEditName] = useState([{ name: '' }]);
+  const [editMovieDuration, setEditMovieDuration] = useState([{ movieDuration: '' }]);
+  const [editDescription, setEditDescription] = useState([{ description: '' }]);
+  const [editMovieType, setEditMovieType] = useState([{ movieTypeName: '' }]);
+  const [editSelectedMovieType, setEditSelectedMovieType] = useState(null);
+  const [editPreDate, setEditPreDate] = useState([{ premiereDate: '' }]);
+  const [editEndDate, setEditEndDate] = useState([{ endTime: '' }]);
+  const [editIsHot, setEditIsHot] = useState([{ isHot: '' }]);
+  const [editIsTicket, setEditIsTicket] = useState([{ isSellTicket: '' }]);
+  const [editImage, setEditImage] = useState([{ image: '' }]);
+  const [editHeroImage, setEditHeroImage] = useState([{ heroImage: '' }]);
+  const [editLanguage, setEditLanguage] = useState([{ language: '' }]);
+  const [editMovieRate, setEditMovieRate] = useState([{ rateName: '' }]);
+  const [editSelectedMovieRate, setEditSelectedMovieRate] = useState(null);
+  const [editTrailer, setEditTrailer] = useState([{ trailer: '' }]);
+  const [editCaster, setEditCaster] = useState([{ caster: '' }]);
+  const [editDirector, setEditDirector] = useState([{ director: '' }]);
+  const [isUpdatingMovie, setIsUpdatingMovie] = useState(false);
+  console.log(editSelectedMovieRate, editSelectedMovieType, editPreDate, editEndDate);
   const handlePreview = async (file) => {
     if (!file.url && !file.preview) {
       file.preview = await getBase64(file.originFileObj);
@@ -190,10 +203,38 @@ const ComponentMovie = () => {
     setPreviewImage(file.url || file.preview);
     setPreviewOpen(true);
   };
-  const handleChange = ({ fileList: newFileList }) => {
-    setFileListUpdate(newFileList);
+  const handleEditSelectIsHot = (selectedOption) => {
+    setEditIsHot([{ isHot: selectedOption === 'Có' ? 'True' : 'False' }]);
   };
-
+  const handleEditSelectIsTicket = (selectedOption) => {
+    setEditIsTicket([{ isSellTicket: selectedOption === 'Có' ? 'True' : 'False' }]);
+  };
+  const handleEditPreDateChange = (date, dateString) => {
+    if (dateString === '') {
+      setEditPreDate([{ premiereDate: null }]);
+    } else {
+      setEditPreDate([{ premiereDate: dateString }]);
+    }
+  };
+  const handleEditEndDateChange = (date, dateString) => {
+    if (dateString === '') {
+      setEditEndDate([{ premiereDate: null }]);
+    } else {
+      setEditEndDate([{ premiereDate: dateString }]);
+    }
+  };
+  const handleChangeForImage = ({ fileList: newFileList }) => {
+    setEditImage(newFileList);
+  };
+  const handleChangeForHero = ({ fileList: newFileList }) => {
+    setEditHeroImage(newFileList);
+  };
+  const handleSelectEditMovieType = (selectedOption) => {
+    setEditSelectedMovieType([{ movieTypeName: selectedOption }]);
+  };
+  const handleSelectEditMovieRate = (selectedOption) => {
+    setEditSelectedMovieRate(selectedOption);
+  };
   const uploadButton = (
     <button
       style={{
@@ -208,10 +249,57 @@ const ComponentMovie = () => {
           marginTop: 8
         }}
       >
-        Upload
+        Chọn Ảnh
       </div>
     </button>
   );
+  const showDataMovie = async (id) => {
+    try {
+      setIdToUpdate(id);
+      const res = await GetMovieById(id);
+      if (res && res.data) {
+        const {
+          movieDuration,
+          endTime,
+          premiereDate,
+          director,
+          caster,
+          isHot,
+          isSellTicket,
+          description,
+          image,
+          heroImage,
+          language,
+          movieTypeName,
+          name,
+          rateName,
+          trailer
+        } = res.data;
+        setEditImage([{ url: image }]);
+        setEditHeroImage([{ url: heroImage }]);
+        setEditTrailer([{ trailer: trailer }]);
+        setEditMovieRate([{ rateName: rateName }]);
+        setEditLanguage([{ language: language }]);
+        setEditDirector([{ director: director }]);
+        setEditCaster([{ caster: caster }]);
+        setEditMovieType([{ movieTypeName: movieTypeName }]);
+        setEditPreDate([{ premiereDate: premiereDate }]);
+        setEditName([{ name: name }]);
+        setEditEndDate([{ endTime: endTime }]);
+        setEditIsHot([{ isHot: isHot }]);
+        setEditIsTicket([{ isSellTicket: isSellTicket }]);
+        setEditMovieDuration([{ movieDuration: movieDuration }]);
+        setEditDescription([{ description: description }]);
+      }
+    } catch (error) {
+      console.error('Error while fetching movie by ID:', error);
+    }
+  };
+  /////////////////////////////////////////
+  const [isComponentVisible, setIsComponentVisible] = useState(false);
+
+  const [metadt, setMetaDt] = useState({ totalItems: 0, PageNumber: 1, PageSize: 10 });
+
   const showDataMovieTypeandRate = async () => {
     const resmovie = await GetAllMovieType();
     const resrate = await GetAllRate();
@@ -261,33 +349,18 @@ const ComponentMovie = () => {
     setIdToDelete(id);
     setDeleteModal(true);
   };
-  const showDataBanner = async (id) => {
-    try {
-      setIdToUpdate(id);
-      const res = await GetFoodById(id);
-      if (res && res.data) {
-        const { price, description, image, nameOfFood } = res.data;
-        setFileListUpdate([{ url: image }]);
-        setEditNameOfFood([{ nameOfFood: nameOfFood }]);
-        setEditPrice([{ price: price }]);
-        setEditDescription([{ description: description }]);
-      }
-    } catch (error) {
-      console.error('Error while fetching banner by ID:', error);
-    }
-  };
 
   const updateabanner = async () => {
     const formData = new FormData();
 
-    if (!fileListUpdate || fileListUpdate.length === 0) {
+    if (!editImage || editImage.length === 0) {
       notification.error({
         message: 'Lỗi',
         description: 'Vui lòng chọn ảnh!'
       });
       return;
     }
-    if (!editNameOfFood) {
+    if (!editName) {
       notification.error({
         message: 'Lỗi',
         description: 'Vui lòng nhập tiêu đề!'
@@ -301,27 +374,27 @@ const ComponentMovie = () => {
       });
       return;
     }
-    const checkType = !!fileListUpdate[0].url;
+    const checkType = !!editImage[0].url;
     formData.append('FoodId', idToUpdate);
-    formData.append('Image', checkType ? fileListUpdate[0].url : fileListUpdate[0].originFileObj);
-    formData.append('NameOfFood', editNameOfFood[0].nameOfFood);
-    formData.append('Price', editPrice[0].price);
+    formData.append('Image', checkType ? editImage[0].url : editImage[0].originFileObj);
+    formData.append('NameOfFood', editName[0].name);
+    formData.append('Price', editMovieDuration[0].price);
     formData.append('Description', editDescription[0].description);
     console.log(
-      `Image: ${checkType}, NameOfFood: ${editNameOfFood[0].nameOfFood}`,
-      `Price: ${editPrice[0].price}, Description: ${editDescription[0].description}`
+      `Image: ${checkType}, NameOfFood: ${editName[0].name}`,
+      `Price: ${editMovieDuration[0].price}, Description: ${editDescription[0].description}`
     );
     if (checkType) {
-      await UpdateFoodHaveString(formData, setIsUpdatingFood);
+      await UpdateFoodHaveString(formData, setIsUpdatingMovie);
     } else {
-      await UpdateFood(formData, setIsUpdatingFood);
+      await UpdateFood(formData, setIsUpdatingMovie);
     }
     await getAllMovies(metadt.PageNumber, metadt.PageSize);
     setIdToUpdate('');
-    setFileListUpdate([]);
-    setEditNameOfFood('');
+    setEditImage([]);
+    setEditName('');
     setEditDescription('');
-    setEditPrice('');
+    setEditMovieDuration('');
   };
   const getAllMovies = async (PageNumber, PageSize) => {
     let res = await GetAllMovie(PageNumber, PageSize);
@@ -427,7 +500,7 @@ const ComponentMovie = () => {
                                         <TableCell align="center">{row.description}</TableCell>
                                         <TableCell align="center" sx={{ width: '10%' }}>
                                           <IconButton aria-label="edit" size="small">
-                                            <EditIcon onClick={() => showDataBanner(row.id)} />
+                                            <EditIcon onClick={() => showDataMovie(row.id)} />
                                           </IconButton>
                                           <IconButton aria-label="delete" size="small">
                                             <DeleteIcon onClick={() => openDeleteModal(row.id)} />
@@ -688,7 +761,7 @@ const ComponentMovie = () => {
                             maxLength={700}
                             value={addDescription}
                             onChange={(e) => setDescription(e.target.value)}
-                            placeholder="disable resize"
+                            placeholder="Mô Tả"
                             style={{
                               height: 130,
                               width: 500,
@@ -716,7 +789,132 @@ const ComponentMovie = () => {
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
                         <Grid item xs={2}>
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Ảnh Đồ Ăn
+                            Tên Phim
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={3}>
+                          <Input
+                            style={{ width: 300 }}
+                            placeholder="Tên Phim"
+                            value={editName[0]?.name}
+                            onChange={(e) => setEditName([{ name: e.target.value }])}
+                          />
+                        </Grid>
+                      </Grid>
+                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
+                        <Grid item xs={2}>
+                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
+                            Thể Loại Phim
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={3}>
+                          <Select
+                            style={{ width: '250px' }}
+                            placeholder="Chọn Thể Loại Phim"
+                            value={editMovieType[0]?.movieTypeName}
+                            onChange={handleSelectEditMovieType}
+                            displayEmpty
+                          >
+                            {addMovieType.map((addMovieType) => (
+                              <option key={addMovieType.id} value={addMovieType.id}>
+                                {addMovieType.movieTypeName}
+                              </option>
+                            ))}
+                          </Select>
+                        </Grid>
+                      </Grid>
+                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
+                        <Grid item xs={2}>
+                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
+                            Thời Lượng Phim
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={3}>
+                          <InputNumber
+                            placeholder="Thời Lượng"
+                            min={60}
+                            max={300}
+                            value={editMovieDuration[0]?.movieDuration}
+                            onChange={(value) => setEditMovieDuration([{ movieDuration: value }])}
+                          />
+                        </Grid>
+                      </Grid>
+                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
+                        <Grid item xs={2}>
+                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
+                            Ngày Khởi Chiếu
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={2}>
+                          <DatePicker
+                            value={dayjs(editPreDate[0]?.premiereDate)}
+                            format={{
+                              format: 'YYYY-MM-DD',
+                              type: 'mask'
+                            }}
+                            onChange={handleEditPreDateChange}
+                            placeholder="Ngày Khởi Chiếu"
+                            needConfirm
+                          />
+                        </Grid>
+                        <Grid item xs={2}>
+                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
+                            Ngày Kết Thúc
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={2}>
+                          <DatePicker
+                            value={dayjs(editEndDate[0]?.endTime)}
+                            format={{
+                              format: 'YYYY-MM-DD',
+                              type: 'mask'
+                            }}
+                            onChange={handleEditEndDateChange}
+                            placeholder="Ngày Kết Thúc"
+                            needConfirm
+                          />
+                        </Grid>
+                      </Grid>
+                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
+                        <Grid item xs={2}>
+                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
+                            Hot
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={3}>
+                          <Select
+                            value={editIsHot[0]?.isHot == true ? 'Có' : 'Không'}
+                            placeholder="Hot?"
+                            style={{ width: 100 }}
+                            options={[
+                              { value: 'True', label: 'Có' },
+                              { value: 'False', label: 'Không' }
+                            ]}
+                            onChange={handleEditSelectIsHot}
+                          />
+                        </Grid>
+                        <Grid item xs={2}>
+                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
+                            Mở Bán
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={3}>
+                          <Select
+                            value={editIsTicket[0]?.isSellTicket == true ? 'Có' : 'Không'}
+                            placeholder="Ticket?"
+                            style={{ width: 100 }}
+                            options={[
+                              { value: 'True', label: 'Có' },
+                              { value: 'False', label: 'Không' }
+                            ]}
+                            onChange={handleEditSelectIsTicket}
+                          />
+                        </Grid>
+                      </Grid>
+                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
+                        <Grid item xs={2}>
+                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
+                            Ảnh Của Phim
                           </Typography>
                         </Grid>
                         <Grid item xs={2}>
@@ -724,11 +922,42 @@ const ComponentMovie = () => {
                             <Upload
                               action="https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload"
                               listType="picture-card"
-                              fileList={fileListUpdate}
+                              fileList={editImage}
                               onPreview={handlePreview}
-                              onChange={handleChange}
+                              onChange={handleChangeForImage}
                             >
-                              {fileListUpdate.length >= 1 ? null : uploadButton}
+                              {editImage.length >= 1 ? null : uploadButton}
+                            </Upload>
+                            {previewImage && (
+                              <Image
+                                wrapperStyle={{
+                                  display: 'none'
+                                }}
+                                preview={{
+                                  visible: previewOpen,
+                                  onVisibleChange: (visible) => setPreviewOpen(visible),
+                                  afterOpenChange: (visible) => !visible && setPreviewImage('')
+                                }}
+                                src={previewImage}
+                              />
+                            )}
+                          </>
+                        </Grid>
+                        <Grid item xs={3}>
+                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
+                            Poster Của Phim
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={4}>
+                          <>
+                            <Upload
+                              action="https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload"
+                              listType="picture-card"
+                              fileList={editHeroImage}
+                              onPreview={handlePreview}
+                              onChange={handleChangeForHero}
+                            >
+                              {editHeroImage.length >= 1 ? null : uploadButton}
                             </Upload>
                             {previewImage && (
                               <Image
@@ -749,38 +978,89 @@ const ComponentMovie = () => {
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
                         <Grid item xs={2}>
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Tên Đồ Ăn
+                            Ngôn Ngữ
                           </Typography>
                         </Grid>
                         <Grid item xs={3}>
                           <Input
-                            placeholder="Tên Đồ Ăn"
-                            value={editNameOfFood[0]?.nameOfFood}
-                            onChange={(e) => setEditNameOfFood([{ nameOfFood: e.target.value }])}
+                            placeholder="Ngôn Ngữ Của Phim"
+                            value={editLanguage[0]?.language}
+                            style={{ width: '200px' }}
+                            onChange={(e) => setEditLanguage([{ language: e.target.value }])}
                           />
                         </Grid>
                       </Grid>
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
                         <Grid item xs={2}>
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Giá
+                            Giới Hạn Độ Tuổi
                           </Typography>
                         </Grid>
                         <Grid item xs={3}>
-                          <InputNumber
-                            placeholder="Giá"
-                            min={40000}
-                            max={1000000}
-                            defaultValue={50000}
-                            value={editPrice[0]?.price}
-                            onChange={(value) => setEditPrice([{ price: value }])}
+                          <Select
+                            style={{ width: '400px' }}
+                            placeholder="Chọn Độ Tuổi Của Phim"
+                            value={editMovieRate[0]?.rateName}
+                            onChange={handleSelectEditMovieRate}
+                            displayEmpty
+                          >
+                            {addMovieRate.map((addMovieRate) => (
+                              <option key={addMovieRate.id} value={addMovieRate.id}>
+                                {addMovieRate.code} - {addMovieRate.description}
+                              </option>
+                            ))}
+                          </Select>
+                        </Grid>
+                      </Grid>
+                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
+                        <Grid item xs={2}>
+                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
+                            Trailer Của Phim
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={3}>
+                          <Input
+                            placeholder="Trailer Youtube"
+                            value={editTrailer[0]?.trailer}
+                            style={{ width: '400px' }}
+                            onChange={(e) => setEditTrailer([{ trailer: e.target.value }])}
                           />
                         </Grid>
                       </Grid>
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
                         <Grid item xs={2}>
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Mô Tả
+                            Dàn Diễn Viên
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={3}>
+                          <Input
+                            placeholder="Dàn Diễn Viên"
+                            value={editCaster[0]?.caster}
+                            style={{ width: '400px' }}
+                            onChange={(e) => setEditCaster([{ caster: e.target.value }])}
+                          />
+                        </Grid>
+                      </Grid>
+                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
+                        <Grid item xs={2}>
+                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
+                            Đạo Diễn
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={3}>
+                          <Input
+                            placeholder="Đạo Diễn"
+                            style={{ width: '400px' }}
+                            value={editDirector[0]?.director}
+                            onChange={(e) => setEditDirector([{ director: e.target.value }])}
+                          />
+                        </Grid>
+                      </Grid>
+                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
+                        <Grid item xs={2}>
+                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
+                            Mô Tả Về Phim
                           </Typography>
                         </Grid>
                         <Grid item xs={3}>
@@ -789,7 +1069,7 @@ const ComponentMovie = () => {
                             maxLength={700}
                             value={editDescription[0]?.description}
                             onChange={(e) => setEditDescription([{ description: e.target.value }])}
-                            placeholder="disable resize"
+                            placeholder="Mô tả"
                             style={{
                               height: 130,
                               width: 500,
@@ -803,7 +1083,7 @@ const ComponentMovie = () => {
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center"></Typography>
                         </Grid>
                         <Grid item xs={3}>
-                          {isUpdatingFood ? (
+                          {isUpdatingMovie ? (
                             <Button type="primary" success loading>
                               Đang Cập Nhật....
                             </Button>

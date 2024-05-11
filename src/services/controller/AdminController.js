@@ -5,8 +5,11 @@ import { updateStart, updateSuccess, updateFailed } from 'store/reducers/adminSl
 const GetAllBanner = async (pageNumber, pageSize) => {
   return axios.get(`api/admin/GetAllBanners?PageNumber=${pageNumber}&PageSize=${pageSize}`);
 };
-const GetBannerById = async (Bannerid) => {
-  return await axios.get(`api/admin/GetBannerById/${Bannerid}`);
+const GetBannerById = async (bannerid) => {
+  return await axios.get(`api/admin/GetBannerById/${bannerid}`);
+};
+const GetMovieById = async (movieid) => {
+  return await axios.get(`api/staff/GetMovieById?movieId=${movieid}`);
 };
 const GetAllMovieType = async () => {
   return await axios.get(`api/admin/GetAllMovieTypesNoPagination`);
@@ -352,9 +355,174 @@ const DeleteMovie = async (movieid) => {
     });
   }
 };
+const UpdateMovie = async (formData, setIsUpdatingMovie) => {
+  dispatch(updateStart());
+  try {
+    setIsUpdatingMovie(true);
+    const res = await axios.put(`api/admin/UpdateMovie`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+
+    if (res.status === 200) {
+      dispatch(updateSuccess());
+      notification.success({
+        message: 'Thành Công',
+        description: 'Cập Nhật Phim Thành Công!'
+      });
+    } else if (res.status === 400) {
+      dispatch(updateFailed());
+      notification.error({
+        message: 'Lỗi',
+        description: res.data.message
+      });
+    } else {
+      dispatch(updateFailed());
+      notification.error({
+        message: 'Lỗi',
+        description: 'Đã Xảy Ra Lỗi Không Xác Định.'
+      });
+    }
+  } catch (error) {
+    dispatch(updateFailed());
+    notification.error({
+      message: 'Lỗi',
+      description: error.message || 'Đã xảy ra lỗi khi gọi API.'
+    });
+  } finally {
+    setIsUpdatingFood(false);
+  }
+};
+const UpdateMovieHaveString = async (formData, setIsUpdatingMovie) => {
+  dispatch(updateStart());
+  try {
+    setIsUpdatingMovie(true);
+    const res = await axios.put(`api/admin/UpdateMovieHaveString`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+
+    if (res.status === 200) {
+      dispatch(updateSuccess());
+      notification.success({
+        message: 'Thành Công',
+        description: 'Cập Nhật Movie Thành Công!'
+      });
+    } else if (res.status === 400) {
+      dispatch(updateFailed());
+      notification.error({
+        message: 'Lỗi',
+        description: res.data.message
+      });
+    } else {
+      dispatch(updateFailed());
+      notification.error({
+        message: 'Lỗi',
+        description: 'Đã Xảy Ra Lỗi Không Xác Định.'
+      });
+    }
+  } catch (error) {
+    dispatch(updateFailed());
+    notification.error({
+      message: 'Lỗi',
+      description: error.message || 'Đã xảy ra lỗi khi gọi API.'
+    });
+  } finally {
+    setIsUpdatingMovie(false);
+  }
+};
+const UpdateMovieImageString = async (formData, setIsUpdatingMovie) => {
+  dispatch(updateStart());
+  try {
+    setIsUpdatingMovie(true);
+    const res = await axios.put(`api/admin/UpdateMovieImageString`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+
+    if (res.status === 200) {
+      dispatch(updateSuccess());
+      notification.success({
+        message: 'Thành Công',
+        description: 'Cập Nhật Movie Thành Công!'
+      });
+    } else if (res.status === 400) {
+      dispatch(updateFailed());
+      notification.error({
+        message: 'Lỗi',
+        description: res.data.message
+      });
+    } else {
+      dispatch(updateFailed());
+      notification.error({
+        message: 'Lỗi',
+        description: 'Đã Xảy Ra Lỗi Không Xác Định.'
+      });
+    }
+  } catch (error) {
+    dispatch(updateFailed());
+    notification.error({
+      message: 'Lỗi',
+      description: error.message || 'Đã xảy ra lỗi khi gọi API.'
+    });
+  } finally {
+    setIsUpdatingMovie(false);
+  }
+};
+const UpdateMovieHeroString = async (formData, setIsUpdatingMovie) => {
+  dispatch(updateStart());
+  try {
+    setIsUpdatingMovie(true);
+    const res = await axios.put(`api/admin/UpdateMovieHeroString`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+
+    if (res.status === 200) {
+      dispatch(updateSuccess());
+      notification.success({
+        message: 'Thành Công',
+        description: 'Cập Nhật Movie Thành Công!'
+      });
+    } else if (res.status === 400) {
+      dispatch(updateFailed());
+      notification.error({
+        message: 'Lỗi',
+        description: res.data.message
+      });
+    } else {
+      dispatch(updateFailed());
+      notification.error({
+        message: 'Lỗi',
+        description: 'Đã Xảy Ra Lỗi Không Xác Định.'
+      });
+    }
+  } catch (error) {
+    dispatch(updateFailed());
+    notification.error({
+      message: 'Lỗi',
+      description: error.message || 'Đã xảy ra lỗi khi gọi API.'
+    });
+  } finally {
+    setIsUpdatingMovie(false);
+  }
+};
 export {
   CreateBanner,
+  UpdateMovie,
+  UpdateMovieHaveString,
+  UpdateMovieImageString,
+  UpdateMovieHeroString,
   DeleteBanner,
+  GetMovieById,
   GetAllBanner,
   UpdateBanner,
   GetBannerById,
