@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
 import { Grid, Typography, Box, Paper, TableCell, TableContainer, Table, TableHead, TableRow, TableBody, IconButton } from '@mui/material';
-import { Image, Input, Button, Upload, notification, Modal, Spin, InputNumber } from 'antd';
+import { Image, Input, Button, Upload, notification, Modal, Spin, InputNumber, DatePicker, Select } from 'antd';
 import MainCard from 'components/MainCard';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
@@ -9,13 +9,15 @@ import { PlusOutlined } from '@ant-design/icons';
 // import SaveIcon from '@mui/icons-material/Save';
 // import CancelIcon from '@mui/icons-material/Close';
 import {
-  CreateFood,
-  DeleteFood,
-  GetAllFoods,
+  CreateMovie,
+  DeleteMovie,
   GetFoodById,
   UpdateFood,
-  UpdateFoodHaveString
+  UpdateFoodHaveString,
+  GetAllMovieType,
+  GetAllRate
 } from '../../services/controller/AdminController';
+import { GetAllMovie } from 'services/controller/StaffController';
 import { TablePagination, Checkbox } from '@mui/material';
 const getBase64 = (file) =>
   new Promise((resolve, reject) => {
@@ -24,12 +26,12 @@ const getBase64 = (file) =>
     reader.onload = () => resolve(reader.result);
     reader.onerror = (error) => reject(error);
   });
-const ComponentFood = () => {
+//const { RangePicker } = DatePicker;
+const ComponentMovie = () => {
   const { TextArea } = Input;
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [deletemodal, setDeleteModal] = useState(false);
-  const [fileList, setFileList] = useState([]);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [fileListUpdate, setFileListUpdate] = useState([{ image: '' }]);
@@ -38,17 +40,149 @@ const ComponentFood = () => {
   const [editDescription, setEditDescription] = useState([{ description: '' }]);
   const [idToDelete, setIdToDelete] = useState('');
   const [idToUpdate, setIdToUpdate] = useState('');
-  const [addFood, setAddFood] = useState('');
-  const [addPrice, setAddPrice] = useState(50000);
+
+  // ADD A NEW MOVIE
+  const [addNameMovie, setAddNameMovie] = useState('');
+  const [addMovieType, setAddMovieType] = useState([]);
+  const [selectedMovieType, setSelectedMovieType] = useState(null);
+  const [addMovieDurate, setAddMovieDurate] = useState(70);
+  const [addPreDate, setAddPreDate] = useState('');
+  const [addEndDate, setAddEndDate] = useState('');
+  const [addIsHot, setAddIsHot] = useState('False');
+  const [addImage, setAddImage] = useState([]);
+  const [addHeroImage, setAddHeroImage] = useState([]);
+  const [addLanguage, setAddLanguage] = useState('');
+  const [addMovieRate, setAddMovieRate] = useState([]);
+  const [selectedMovieRate, setSelectedMovieRate] = useState(null);
+  const [addTrailer, setAddTrailer] = useState('');
+  const [addCaster, setAddCaster] = useState('');
+  const [addDirector, setAddDirector] = useState('');
   const [addDescription, setDescription] = useState('');
-  const [isLoadingFood, setIsLoadingFood] = useState(false);
+  const [isLoadingCreateMovie, setIsLoadingCreateMovie] = useState(false);
+  console.log(setIsLoadingCreateMovie);
+  const onChangeForImage = ({ fileList: newFileList }) => {
+    setAddImage(newFileList.slice(-1));
+  };
+  const onChangeForHeroImage = ({ fileList: newFileList }) => {
+    setAddHeroImage(newFileList.slice(-1));
+  };
+  const handleSelectIsHot = (selectedOption) => {
+    setAddIsHot(selectedOption === 'Có' ? 'True' : 'False');
+  };
+  const handleSelectMovieType = (selectedOption) => {
+    setSelectedMovieType(selectedOption);
+  };
+  const handleSelectMovieRate = (selectedOption) => {
+    setSelectedMovieRate(selectedOption);
+  };
+  const handlePreDateChange = (date, dateString) => {
+    if (dateString === '') {
+      setAddPreDate(null);
+    } else {
+      setAddPreDate(dateString);
+    }
+  };
+  const handleEndDateChange = (date, dateString) => {
+    if (dateString === '') {
+      setAddEndDate(null);
+    } else {
+      setAddEndDate(dateString);
+    }
+  };
+  const addANewMovie = async () => {
+    let errorMessage = '';
+    const formData = new FormData();
+    switch (true) {
+      case !addNameMovie:
+        errorMessage = 'Vui lòng nhập tên phim!';
+        break;
+      case !selectedMovieType:
+        errorMessage = 'Vui lòng chọn thể loại phim!';
+        break;
+      case !addMovieDurate:
+        errorMessage = 'Vui lòng nhập thời lượng phim!';
+        break;
+      case !addPreDate:
+        errorMessage = 'Vui lòng chọn ngày khởi chiếu!';
+        break;
+      case !addEndDate:
+        errorMessage = 'Vui lòng chọn ngày kết thúc!';
+        break;
+      case !addImage || addImage.length === 0 || !addImage[0].originFileObj:
+        errorMessage = 'Vui lòng chọn ảnh!';
+        break;
+      case !addHeroImage || addHeroImage.length === 0 || !addHeroImage[0].originFileObj:
+        errorMessage = 'Vui lòng chọn poster!';
+        break;
+      case !addLanguage:
+        errorMessage = 'Vui lòng nhập ngôn ngữ!';
+        break;
+      case !selectedMovieRate:
+        errorMessage = 'Vui lòng chọn giới hạn tuổi!';
+        break;
+      case !addTrailer:
+        errorMessage = 'Vui lòng nhập trailer phim!';
+        break;
+      case !addCaster:
+        errorMessage = 'Vui lòng nhập dàn diễn viên!';
+        break;
+      case !addDirector:
+        errorMessage = 'Vui lòng nhập đạo diễn!';
+        break;
+      case !addDescription:
+        errorMessage = 'Vui lòng nhập mô tả!';
+        break;
+      default:
+        break;
+    }
+
+    if (errorMessage) {
+      notification.error({
+        message: 'Lỗi',
+        description: errorMessage
+      });
+      return;
+    }
+
+    formData.append('Name', addNameMovie);
+    formData.append('MovieTypeId', selectedMovieType);
+    formData.append('MovieDuration', addMovieDurate);
+    formData.append('PremiereDate', addPreDate);
+    formData.append('EndTime', addEndDate);
+    formData.append('IsHot', addIsHot);
+    formData.append('IsSellTicket', false);
+    formData.append('Image', addImage[0].originFileObj);
+    formData.append('HeroImage', addHeroImage[0].originFileObj);
+    formData.append('Language', addLanguage);
+    formData.append('RateId', selectedMovieRate);
+    formData.append('Trailer', addTrailer);
+    formData.append('Caster', addCaster);
+    formData.append('Director', addDirector);
+    formData.append('Description', addDescription);
+    await CreateMovie(formData, setIsLoadingCreateMovie);
+    await getAllMovies(metadt.PageNumber, metadt.PageSize);
+    setAddNameMovie('');
+    setSelectedMovieType(null);
+    setAddMovieDurate(70);
+    handlePreDateChange('');
+    handleEndDateChange('');
+    setAddIsHot('');
+    setAddImage([]);
+    setAddHeroImage([]);
+    setAddLanguage('');
+    setSelectedMovieRate(null);
+    setAddTrailer('');
+    setAddCaster('');
+    setAddDirector('');
+    setDescription('');
+  };
+  //////////////////////////////////////////
+
   const [isUpdatingFood, setIsUpdatingFood] = useState(false);
   const [isComponentVisible, setIsComponentVisible] = useState(false);
+
   const [metadt, setMetaDt] = useState({ totalItems: 0, PageNumber: 1, PageSize: 10 });
-  const onChangeforupload = ({ fileList: newFileList }) => {
-    setFileList(newFileList.slice(-1));
-    console.log('add', newFileList);
-  };
+
   const handlePreview = async (file) => {
     if (!file.url && !file.preview) {
       file.preview = await getBase64(file.originFileObj);
@@ -78,60 +212,34 @@ const ComponentFood = () => {
       </div>
     </button>
   );
+  const showDataMovieTypeandRate = async () => {
+    const resmovie = await GetAllMovieType();
+    const resrate = await GetAllRate();
+    if (resmovie && resrate) {
+      setAddMovieType(resmovie);
+      setAddMovieRate(resrate);
+    }
+  };
   useEffect(() => {
     setIsComponentVisible(true);
-    getAllFoods(metadt.PageNumber, metadt.PageSize);
+    getAllMovies(metadt.PageNumber, metadt.PageSize);
+    showDataMovieTypeandRate();
   }, []);
 
-  const addANewFood = async () => {
-    const formData = new FormData();
-    if (!fileList || fileList.length === 0 || !fileList[0].originFileObj) {
-      notification.error({
-        message: 'Lỗi',
-        description: 'Vui lòng chọn ảnh!'
-      });
-      return;
-    }
-    if (!addFood) {
-      notification.error({
-        message: 'Lỗi',
-        description: 'Vui lòng nhập tên đồ ăn!'
-      });
-      return;
-    }
-    if (!addDescription) {
-      notification.error({
-        message: 'Lỗi',
-        description: 'Vui lòng nhập mô tả!'
-      });
-      return;
-    }
-    formData.append('Price', addPrice);
-    formData.append('Description', addDescription);
-    formData.append('Image', fileList[0].originFileObj);
-    formData.append('NameOfFood', addFood);
-
-    await CreateFood(formData, setIsLoadingFood);
-    await getAllFoods(metadt.PageNumber, metadt.PageSize);
-    setAddPrice(50000);
-    setDescription('');
-    setFileList([]);
-    setAddFood('');
-  };
   const isSelected = (id) => selected.indexOf(id) !== -1;
   const handleDeleteClick = async () => {
     if (idToDelete) {
-      await DeleteFood(idToDelete);
+      await DeleteMovie(idToDelete);
       setDeleteModal(false);
       setIdToDelete('');
-      await getAllFoods(1, metadt.PageSize);
+      await getAllMovies(1, metadt.PageSize);
     }
   };
   const onPageChange = (e, newpage) => {
-    getAllFoods(newpage + 1, metadt.PageSize);
+    getAllMovies(newpage + 1, metadt.PageSize);
   };
   const onRowsPerPageChange = (e) => {
-    getAllFoods(1, e.target.value);
+    getAllMovies(1, e.target.value);
   };
 
   const handleClick = (event, id) => {
@@ -208,36 +316,41 @@ const ComponentFood = () => {
     } else {
       await UpdateFood(formData, setIsUpdatingFood);
     }
-    await getAllFoods(metadt.PageNumber, metadt.PageSize);
+    await getAllMovies(metadt.PageNumber, metadt.PageSize);
     setIdToUpdate('');
     setFileListUpdate([]);
     setEditNameOfFood('');
     setEditDescription('');
     setEditPrice('');
   };
-  const getAllFoods = async (PageNumber, PageSize) => {
-    let res = await GetAllFoods(PageNumber, PageSize);
+  const getAllMovies = async (PageNumber, PageSize) => {
+    let res = await GetAllMovie(PageNumber, PageSize);
     if (res && res.data) {
       setRows(res.data);
       setMetaDt({ totalItems: res.totalItems, PageNumber: res.pageNumber, PageSize: res.pageSize });
     }
   };
-  const formatPrice = (price) => {
-    return price.toLocaleString('vi-VN', { currency: 'VND' });
+  const formatDate = (dateString) => {
+    const dateObj = new Date(dateString);
+    const year = dateObj.getFullYear();
+    const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+    const day = dateObj.getDate().toString().padStart(2, '0');
+    return `${day}/${month}/${year}`;
   };
+
   return (
     <>
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '125vh' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '170vh' }}>
         {isComponentVisible && (
           <Grid container spacing={3}>
-            {isLoadingFood ? (
+            {isLoadingCreateMovie ? (
               <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center' }}>
-                <Spin spinning={isLoadingFood} delay={500} />
+                <Spin spinning={isLoadingCreateMovie} delay={500} />
               </Grid>
             ) : (
               <>
-                <Grid item xs={12}>
-                  <MainCard title="ĐỒ ĂN" codeHighlight sx={{ borderWidth: 2 }}>
+                <Grid item xs={14}>
+                  <MainCard title="CHI TIẾT PHIM" codeHighlight sx={{ borderWidth: 2 }}>
                     <Grid container spacing={0} direction="row">
                       <div style={{ width: '100%' }}>
                         <Box
@@ -254,13 +367,21 @@ const ComponentFood = () => {
                         >
                           <Paper>
                             <TableContainer>
-                              <Table sx={{ minWidth: 800 }} aria-label="simple table">
+                              <Table sx={{ maxWidth: 2000 }} aria-label="simple table">
                                 <TableHead>
                                   <TableRow>
                                     <TableCell />
+                                    <TableCell align="center">Tên Phim</TableCell>
+                                    <TableCell align="center">Thể Loại</TableCell>
+                                    <TableCell align="center">Thời Lượng</TableCell>
+                                    <TableCell align="center">Khởi Chiếu</TableCell>
+                                    <TableCell align="center">Kết Thúc</TableCell>
                                     <TableCell align="center">Ảnh</TableCell>
-                                    <TableCell align="center">Tên Đồ Ăn</TableCell>
-                                    <TableCell align="center">Giá</TableCell>
+                                    <TableCell align="center">Poster</TableCell>
+                                    <TableCell align="center">Ngôn Ngữ</TableCell>
+                                    <TableCell align="center">Giới Hạn Tuổi</TableCell>
+                                    <TableCell align="center">Dàn Diễn Viên</TableCell>
+                                    <TableCell align="center">Đạo Diễn</TableCell>
                                     <TableCell align="center">Mô Tả</TableCell>
                                   </TableRow>
                                 </TableHead>
@@ -288,11 +409,21 @@ const ComponentFood = () => {
                                             }}
                                           />
                                         </TableCell>
-                                        <TableCell align="left">
+                                        <TableCell align="center">{row.name}</TableCell>
+                                        <TableCell align="center">{row.movieTypeName}</TableCell>
+                                        <TableCell align="center">{row.movieDuration}</TableCell>
+                                        <TableCell align="center">{formatDate(row.premiereDate)}</TableCell>
+                                        <TableCell align="center">{formatDate(row.endTime)}</TableCell>
+                                        <TableCell align="center">
                                           <Image src={row.image} alt={row.image} />
                                         </TableCell>
-                                        <TableCell align="center">{row.nameOfFood}</TableCell>
-                                        <TableCell align="center">{formatPrice(row.price)}vnđ</TableCell>
+                                        <TableCell align="center">
+                                          <Image src={row.heroImage} alt={row.heroImage} />
+                                        </TableCell>
+                                        <TableCell align="center">{row.language}</TableCell>
+                                        <TableCell align="center">{row.rateName}</TableCell>
+                                        <TableCell align="center">{row.caster}</TableCell>
+                                        <TableCell align="center">{row.director}</TableCell>
                                         <TableCell align="center">{row.description}</TableCell>
                                         <TableCell align="center" sx={{ width: '10%' }}>
                                           <IconButton aria-label="edit" size="small">
@@ -325,69 +456,242 @@ const ComponentFood = () => {
                   </MainCard>
                 </Grid>
                 <Grid item xs={6}>
-                  <MainCard title="THÊM ĐỒ ĂN" codeHighlight sx={{ borderWidth: 2 }}>
+                  <MainCard title="THÊM PHIM MỚI" codeHighlight sx={{ borderWidth: 2 }}>
                     <Grid container spacing={0}>
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
                         <Grid item xs={2}>
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Ảnh Đồ Ăn
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={2}>
-                          <Upload
-                            action="https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload"
-                            listType="picture-card"
-                            fileList={fileList}
-                            onChange={onChangeforupload}
-                            maxCount={1}
-                          >
-                            {fileList.length === 0 && '+ Chọn Ảnh'}
-                          </Upload>
-                        </Grid>
-                      </Grid>
-                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
-                        <Grid item xs={2}>
-                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Tên Đồ Ăn
+                            Tên Phim
                           </Typography>
                         </Grid>
                         <Grid item xs={3}>
-                          <Input placeholder="Tên Đồ Ăn" value={addFood} onChange={(e) => setAddFood(e.target.value)} />
+                          <Input placeholder="Tên Phim" value={addNameMovie} onChange={(e) => setAddNameMovie(e.target.value)} />
                         </Grid>
                       </Grid>
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
                         <Grid item xs={2}>
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Giá
+                            Thể Loại Phim
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={3}>
+                          <Select
+                            style={{ width: '250px' }}
+                            placeholder="Chọn Thể Loại Phim"
+                            value={selectedMovieType}
+                            onChange={handleSelectMovieType}
+                            displayEmpty
+                          >
+                            {addMovieType.map((addMovieType) => (
+                              <option key={addMovieType.id} value={addMovieType.id}>
+                                {addMovieType.movieTypeName}
+                              </option>
+                            ))}
+                          </Select>
+                        </Grid>
+                      </Grid>
+                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
+                        <Grid item xs={2}>
+                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
+                            Thời Lượng Phim
                           </Typography>
                         </Grid>
                         <Grid item xs={3}>
                           <InputNumber
-                            placeholder="Giá"
-                            min={40000}
-                            max={1000000}
-                            defaultValue={50000}
-                            value={addPrice}
-                            onChange={(value) => setAddPrice(value)}
+                            placeholder="Thời Lượng"
+                            min={60}
+                            max={300}
+                            defaultValue={70}
+                            value={addMovieDurate}
+                            onChange={(value) => setAddMovieDurate(value)}
                           />
                         </Grid>
                       </Grid>
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
                         <Grid item xs={2}>
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Mô Tả
+                            Ngày Khởi Chiếu
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={2}>
+                          <DatePicker
+                            format={{
+                              format: 'YYYY-MM-DD',
+                              type: 'mask'
+                            }}
+                            onChange={handlePreDateChange}
+                            placeholder="Ngày Khởi Chiếu"
+                            needConfirm
+                          />
+                        </Grid>
+                        <Grid item xs={2}>
+                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
+                            Ngày Kết Thúc
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={2}>
+                          <DatePicker
+                            format={{
+                              format: 'YYYY-MM-DD',
+                              type: 'mask'
+                            }}
+                            onChange={handleEndDateChange}
+                            placeholder="Ngày Kết Thúc"
+                            needConfirm
+                          />
+                        </Grid>
+                      </Grid>
+                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
+                        <Grid item xs={2}>
+                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
+                            Hot
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={3}>
+                          <Select
+                            defaultValue="Không"
+                            placeholder="Hot?"
+                            style={{ width: 100 }}
+                            options={[
+                              { value: 'True', label: 'Có' },
+                              { value: 'False', label: 'Không' }
+                            ]}
+                            onChange={handleSelectIsHot}
+                          />
+                        </Grid>
+                      </Grid>
+                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
+                        <Grid item xs={2}>
+                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
+                            Ảnh Của Phim
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={2}>
+                          <Upload
+                            action="https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload"
+                            listType="picture-card"
+                            fileList={addImage}
+                            onChange={onChangeForImage}
+                            maxCount={1}
+                          >
+                            {addImage.length === 0 && '+ Chọn Ảnh'}
+                          </Upload>
+                        </Grid>
+                        <Grid item xs={3}>
+                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
+                            Poster Của Phim
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={4}>
+                          <Upload
+                            action="https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload"
+                            listType="picture-card"
+                            fileList={addHeroImage}
+                            onChange={onChangeForHeroImage}
+                            maxCount={1}
+                          >
+                            {addHeroImage.length === 0 && '+ Chọn Ảnh'}
+                          </Upload>
+                        </Grid>
+                      </Grid>
+                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
+                        <Grid item xs={2}>
+                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
+                            Ngôn Ngữ
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={3}>
+                          <Input
+                            placeholder="Ngôn Ngữ Của Phim"
+                            value={addLanguage}
+                            style={{ width: '200px' }}
+                            onChange={(e) => setAddLanguage(e.target.value)}
+                          />
+                        </Grid>
+                      </Grid>
+                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
+                        <Grid item xs={2}>
+                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
+                            Giới Hạn Độ Tuổi
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={3}>
+                          <Select
+                            style={{ width: '400px' }}
+                            placeholder="Chọn Độ Tuổi Của Phim"
+                            value={selectedMovieRate}
+                            onChange={handleSelectMovieRate}
+                            displayEmpty
+                          >
+                            {addMovieRate.map((addMovieRate) => (
+                              <option key={addMovieRate.id} value={addMovieRate.id}>
+                                {addMovieRate.code} - {addMovieRate.description}
+                              </option>
+                            ))}
+                          </Select>
+                        </Grid>
+                      </Grid>
+                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
+                        <Grid item xs={2}>
+                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
+                            Trailer Của Phim
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={3}>
+                          <Input
+                            placeholder="Trailer Youtube"
+                            value={addTrailer}
+                            style={{ width: '400px' }}
+                            onChange={(e) => setAddTrailer(e.target.value)}
+                          />
+                        </Grid>
+                      </Grid>
+                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
+                        <Grid item xs={2}>
+                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
+                            Dàn Diễn Viên
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={3}>
+                          <Input
+                            placeholder="Dàn Diễn Viên"
+                            value={addCaster}
+                            style={{ width: '400px' }}
+                            onChange={(e) => setAddCaster(e.target.value)}
+                          />
+                        </Grid>
+                      </Grid>
+                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
+                        <Grid item xs={2}>
+                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
+                            Đạo Diễn
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={3}>
+                          <Input
+                            placeholder="Đạo Diễn"
+                            style={{ width: '400px' }}
+                            value={addDirector}
+                            onChange={(e) => setAddDirector(e.target.value)}
+                          />
+                        </Grid>
+                      </Grid>
+                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
+                        <Grid item xs={2}>
+                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
+                            Mô Tả Về Phim
                           </Typography>
                         </Grid>
                         <Grid item xs={3}>
                           <TextArea
                             showCount
-                            maxLength={200}
+                            maxLength={700}
                             value={addDescription}
                             onChange={(e) => setDescription(e.target.value)}
                             placeholder="disable resize"
                             style={{
                               height: 130,
-                              width: 400,
+                              width: 500,
                               resize: 'none'
                             }}
                           />
@@ -398,8 +702,8 @@ const ComponentFood = () => {
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center"></Typography>
                         </Grid>
                         <Grid item xs={3}>
-                          <Button type="primary" danger onClick={addANewFood}>
-                            Thêm
+                          <Button type="primary" danger onClick={addANewMovie}>
+                            Thêm Phim
                           </Button>
                         </Grid>
                       </Grid>
@@ -407,7 +711,7 @@ const ComponentFood = () => {
                   </MainCard>
                 </Grid>
                 <Grid item xs={6}>
-                  <MainCard title="CẬP NHẬT ĐỒ ĂN" codeHighlight sx={{ borderWidth: 2 }}>
+                  <MainCard title="CẬP NHẬT PHIM" codeHighlight sx={{ borderWidth: 2 }}>
                     <Grid container spacing={0}>
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
                         <Grid item xs={2}>
@@ -482,13 +786,13 @@ const ComponentFood = () => {
                         <Grid item xs={3}>
                           <TextArea
                             showCount
-                            maxLength={200}
+                            maxLength={700}
                             value={editDescription[0]?.description}
                             onChange={(e) => setEditDescription([{ description: e.target.value }])}
                             placeholder="disable resize"
                             style={{
                               height: 130,
-                              width: 400,
+                              width: 500,
                               resize: 'none'
                             }}
                           />
@@ -532,4 +836,4 @@ const ComponentFood = () => {
   );
 };
 
-export default ComponentFood;
+export default ComponentMovie;

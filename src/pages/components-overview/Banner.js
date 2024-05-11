@@ -43,7 +43,6 @@ const ComponentBanner = () => {
   const [metadt, setMetaDt] = useState({ totalItems: 0, PageNumber: 1, PageSize: 10 });
   const onChangeforupload = ({ fileList: newFileList }) => {
     setFileList(newFileList.slice(-1));
-    console.log('add', newFileList);
   };
   const handlePreview = async (file) => {
     if (!file.url && !file.preview) {

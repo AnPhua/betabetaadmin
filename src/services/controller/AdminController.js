@@ -3,10 +3,16 @@ import { notification } from 'antd';
 import { dispatch } from 'store/index';
 import { updateStart, updateSuccess, updateFailed } from 'store/reducers/adminSlice';
 const GetAllBanner = async (pageNumber, pageSize) => {
-  return axios.get(`https://localhost:7067/api/admin/GetAllBanners?PageNumber=${pageNumber}&PageSize=${pageSize}`);
+  return axios.get(`api/admin/GetAllBanners?PageNumber=${pageNumber}&PageSize=${pageSize}`);
 };
 const GetBannerById = async (Bannerid) => {
-  return await axios.get(`https://localhost:7067/api/admin/GetBannerById/${Bannerid}`);
+  return await axios.get(`api/admin/GetBannerById/${Bannerid}`);
+};
+const GetAllMovieType = async () => {
+  return await axios.get(`api/admin/GetAllMovieTypesNoPagination`);
+};
+const GetAllRate = async () => {
+  return await axios.get(`api/admin/GetAllRateNoPagination`);
 };
 const token = localStorage.getItem('accesstoken');
 const CreateBanner = async (formData, setIsLoading) => {
@@ -143,7 +149,7 @@ const UpdateBannerHaveString = async (formData, setIsUpdating) => {
   }
 };
 const GetAllFoods = async (pageNumber, pageSize) => {
-  return axios.get(`https://localhost:7067/api/admin/GetAllFoods?PageNumber=${pageNumber}&PageSize=${pageSize}`);
+  return axios.get(`api/admin/GetAllFoods?PageNumber=${pageNumber}&PageSize=${pageSize}`);
 };
 const GetFoodById = async (foodid) => {
   return await axios.get(`https://localhost:7067/api/admin/GetFoodById/${foodid}`);
@@ -287,7 +293,65 @@ const UpdateFoodHaveString = async (formData, setIsUpdatingFood) => {
     setIsUpdatingFood(false);
   }
 };
+const CreateMovie = async (formData, setIsLoadingCreateMovie) => {
+  try {
+    setIsLoadingCreateMovie(true);
+    const res = await axios.post(`api/admin/CreateMovie`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data'
+      }
+    });
 
+    if (res.status === 200) {
+      notification.success({
+        message: 'Thành Công',
+        description: 'Thêm Phim Thành Công!'
+      });
+    } else if (res.status === 400) {
+      notification.error({
+        message: 'Lỗi',
+        description: res.data.message
+      });
+    } else {
+      notification.error({
+        message: 'Lỗi',
+        description: 'Đã Xảy Ra Lỗi Không Xác Định.'
+      });
+    }
+  } catch (error) {
+    notification.error({
+      message: 'Lỗi',
+      description: error.message || 'Đã xảy ra lỗi khi gọi API.'
+    });
+  } finally {
+    setIsLoadingCreateMovie(false);
+  }
+};
+const DeleteMovie = async (movieid) => {
+  try {
+    await axios.put(
+      `api/admin/DeleteMovie/${movieid}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      }
+    );
+    dispatch(updateSuccess());
+    notification.success({
+      message: 'Thành Công',
+      description: 'Xóa Phim Thành Công!'
+    });
+  } catch (error) {
+    notification.error({
+      message: 'Lỗi',
+      description: error.message || 'Đã xảy ra lỗi khi gọi API.'
+    });
+  }
+};
 export {
   CreateBanner,
   DeleteBanner,
@@ -300,5 +364,9 @@ export {
   CreateFood,
   DeleteFood,
   UpdateFood,
-  UpdateFoodHaveString
+  UpdateFoodHaveString,
+  GetAllMovieType,
+  GetAllRate,
+  DeleteMovie,
+  CreateMovie
 };

@@ -8,8 +8,8 @@ const GetMovieShowing = () => {
 const GetSneakShow = () => {
   return axios.get('api/staff/GetAllMovie?MovieTypeId=6&pageSize=10&pageNumber=1');
 };
-const GetAllMovie = () => {
-  return axios.get('api/staff/GetAllMovie?pageSize=13&pageNumber=1');
+const GetAllMovie = (PageNumber, PageSize) => {
+  return axios.get(`api/staff/GetAllMovie?PageNumber=${PageNumber}&PageSize=${PageSize}`);
 };
 const GetMovieById = (movieId) => {
   return axios.get(`api/staff/GetMovieById?movieId=${movieId}`);
