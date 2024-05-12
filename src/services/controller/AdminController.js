@@ -392,7 +392,7 @@ const UpdateMovie = async (formData, setIsUpdatingMovie) => {
       description: error.message || 'Đã xảy ra lỗi khi gọi API.'
     });
   } finally {
-    setIsUpdatingFood(false);
+    setIsUpdatingMovie(false);
   }
 };
 const UpdateMovieHaveString = async (formData, setIsUpdatingMovie) => {

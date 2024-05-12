@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
 import { Grid, Typography, Box, Paper, TableCell, TableContainer, Table, TableHead, TableRow, TableBody, IconButton } from '@mui/material';
@@ -12,10 +13,12 @@ import {
   CreateMovie,
   DeleteMovie,
   GetMovieById,
-  UpdateFood,
-  UpdateFoodHaveString,
+  UpdateMovie,
+  UpdateMovieHaveString,
   GetAllMovieType,
-  GetAllRate
+  GetAllRate,
+  UpdateMovieHeroString,
+  UpdateMovieImageString
 } from '../../services/controller/AdminController';
 import { GetAllMovie } from 'services/controller/StaffController';
 import { TablePagination, Checkbox } from '@mui/material';
@@ -180,7 +183,7 @@ const ComponentMovie = () => {
   const [editName, setEditName] = useState([{ name: '' }]);
   const [editMovieDuration, setEditMovieDuration] = useState([{ movieDuration: '' }]);
   const [editDescription, setEditDescription] = useState([{ description: '' }]);
-  const [editMovieType, setEditMovieType] = useState([{ movieTypeName: '' }]);
+  const [editMovieType, setEditMovieType] = useState([{ data: '' }]);
   const [editSelectedMovieType, setEditSelectedMovieType] = useState(null);
   const [editPreDate, setEditPreDate] = useState([{ premiereDate: '' }]);
   const [editEndDate, setEditEndDate] = useState([{ endTime: '' }]);
@@ -195,7 +198,6 @@ const ComponentMovie = () => {
   const [editCaster, setEditCaster] = useState([{ caster: '' }]);
   const [editDirector, setEditDirector] = useState([{ director: '' }]);
   const [isUpdatingMovie, setIsUpdatingMovie] = useState(false);
-  console.log(editSelectedMovieRate, editSelectedMovieType, editPreDate, editEndDate);
   const handlePreview = async (file) => {
     if (!file.url && !file.preview) {
       file.preview = await getBase64(file.originFileObj);
@@ -230,7 +232,7 @@ const ComponentMovie = () => {
     setEditHeroImage(newFileList);
   };
   const handleSelectEditMovieType = (selectedOption) => {
-    setEditSelectedMovieType([{ movieTypeName: selectedOption }]);
+    setEditSelectedMovieType(selectedOption);
   };
   const handleSelectEditMovieRate = (selectedOption) => {
     setEditSelectedMovieRate(selectedOption);
@@ -295,6 +297,111 @@ const ComponentMovie = () => {
       console.error('Error while fetching movie by ID:', error);
     }
   };
+  const updateMovie = async () => {
+    let errorMessage = '';
+    const formData = new FormData();
+    switch (true) {
+      case !editName:
+        errorMessage = 'Vui lòng nhập tên phim!';
+        break;
+      case !editSelectedMovieType:
+        errorMessage = 'Cần chọn lại thể loại phim!';
+        break;
+      case !addMovieDurate:
+        errorMessage = 'Vui lòng nhập thời lượng phim!';
+        break;
+      case !editPreDate:
+        errorMessage = 'Vui lòng chọn ngày khởi chiếu!';
+        break;
+      case !editEndDate:
+        errorMessage = 'Vui lòng chọn ngày kết thúc!';
+        break;
+      case !editImage || editImage.length === 0:
+        errorMessage = 'Vui lòng chọn ảnh!';
+        break;
+      case !editHeroImage || editHeroImage.length === 0:
+        errorMessage = 'Vui lòng chọn poster!';
+        break;
+      case !editLanguage:
+        errorMessage = 'Vui lòng nhập ngôn ngữ!';
+        break;
+      case !editSelectedMovieRate:
+        errorMessage = 'Cần chọn lại giới hạn tuổi!';
+        break;
+      case !editTrailer:
+        errorMessage = 'Vui lòng nhập trailer phim!';
+        break;
+      case !editCaster:
+        errorMessage = 'Vui lòng nhập dàn diễn viên!';
+        break;
+      case !editDirector:
+        errorMessage = 'Vui lòng nhập đạo diễn!';
+        break;
+      case !editDescription:
+        errorMessage = 'Vui lòng nhập mô tả!';
+        break;
+      default:
+        break;
+    }
+
+    if (errorMessage) {
+      notification.error({
+        message: 'Lỗi',
+        description: errorMessage
+      });
+      return;
+    }
+    const checkTypeImage = !!editImage[0].url;
+    const checkTypeHeroImage = !!editHeroImage[0].url;
+    formData.append('Id', idToUpdate);
+    formData.append('Name', editName[0]?.name);
+    formData.append('MovieTypeId', editSelectedMovieType);
+    formData.append('MovieDuration', editMovieDuration[0]?.movieDuration);
+    formData.append('PremiereDate', editPreDate[0]?.premiereDate);
+    formData.append('EndTime', editEndDate[0]?.endTime);
+    formData.append('IsHot', editIsHot[0]?.isHot);
+    formData.append('IsSellTicket', editIsTicket[0].isSellTicket);
+    formData.append('Image', checkTypeImage ? editImage[0].url : editImage[0].originFileObj);
+    formData.append('HeroImage', checkTypeHeroImage ? editHeroImage[0].url : editHeroImage[0].originFileObj);
+    formData.append('Language', editLanguage[0]?.language);
+    formData.append('RateId', editSelectedMovieRate);
+    formData.append('Trailer', editTrailer[0]?.trailer);
+    formData.append('Caster', editCaster[0]?.caster);
+    formData.append('Director', editDirector[0]?.director);
+    formData.append('Description', editDescription[0]?.description);
+
+    if (checkTypeImage && checkTypeHeroImage) {
+      await UpdateMovieHaveString(formData, setIsUpdatingMovie);
+      await getAllMovies(metadt.PageNumber, metadt.PageSize);
+    } else if (checkTypeImage && !checkTypeHeroImage) {
+      await UpdateMovieImageString(formData, setIsUpdatingMovie);
+      await getAllMovies(metadt.PageNumber, metadt.PageSize);
+    } else if (!checkTypeImage && checkTypeHeroImage) {
+      await UpdateMovieHeroString(formData, setIsUpdatingMovie);
+      await getAllMovies(metadt.PageNumber, metadt.PageSize);
+    } else {
+      await UpdateMovie(formData, setIsUpdatingMovie);
+      await getAllMovies(metadt.PageNumber, metadt.PageSize);
+    }
+    setIdToUpdate('');
+    setEditCaster('');
+    setEditMovieType('');
+    setEditMovieRate('');
+    setEditDirector('');
+    setEditIsHot('');
+    setEditIsTicket('');
+    setEditSelectedMovieType('');
+    setEditSelectedMovieRate('');
+    setEditLanguage('');
+    handleEditPreDateChange('');
+    handleEditEndDateChange('');
+    setEditTrailer('');
+    setEditImage([]);
+    setEditHeroImage([]);
+    setEditName('');
+    setEditDescription('');
+    setEditMovieDuration('');
+  };
   /////////////////////////////////////////
   const [isComponentVisible, setIsComponentVisible] = useState(false);
 
@@ -350,52 +457,6 @@ const ComponentMovie = () => {
     setDeleteModal(true);
   };
 
-  const updateabanner = async () => {
-    const formData = new FormData();
-
-    if (!editImage || editImage.length === 0) {
-      notification.error({
-        message: 'Lỗi',
-        description: 'Vui lòng chọn ảnh!'
-      });
-      return;
-    }
-    if (!editName) {
-      notification.error({
-        message: 'Lỗi',
-        description: 'Vui lòng nhập tiêu đề!'
-      });
-      return;
-    }
-    if (!editDescription) {
-      notification.error({
-        message: 'Lỗi',
-        description: 'Vui lòng nhập tiêu đề!'
-      });
-      return;
-    }
-    const checkType = !!editImage[0].url;
-    formData.append('FoodId', idToUpdate);
-    formData.append('Image', checkType ? editImage[0].url : editImage[0].originFileObj);
-    formData.append('NameOfFood', editName[0].name);
-    formData.append('Price', editMovieDuration[0].price);
-    formData.append('Description', editDescription[0].description);
-    console.log(
-      `Image: ${checkType}, NameOfFood: ${editName[0].name}`,
-      `Price: ${editMovieDuration[0].price}, Description: ${editDescription[0].description}`
-    );
-    if (checkType) {
-      await UpdateFoodHaveString(formData, setIsUpdatingMovie);
-    } else {
-      await UpdateFood(formData, setIsUpdatingMovie);
-    }
-    await getAllMovies(metadt.PageNumber, metadt.PageSize);
-    setIdToUpdate('');
-    setEditImage([]);
-    setEditName('');
-    setEditDescription('');
-    setEditMovieDuration('');
-  };
   const getAllMovies = async (PageNumber, PageSize) => {
     let res = await GetAllMovie(PageNumber, PageSize);
     if (res && res.data) {
@@ -811,7 +872,6 @@ const ComponentMovie = () => {
                           <Select
                             style={{ width: '250px' }}
                             placeholder="Chọn Thể Loại Phim"
-                            value={editMovieType[0]?.movieTypeName}
                             onChange={handleSelectEditMovieType}
                             displayEmpty
                           >
@@ -883,7 +943,7 @@ const ComponentMovie = () => {
                         </Grid>
                         <Grid item xs={3}>
                           <Select
-                            value={editIsHot[0]?.isHot == true ? 'Có' : 'Không'}
+                            defaultValue={editIsHot[0]?.isHot == true ? 'Có' : 'Không'}
                             placeholder="Hot?"
                             style={{ width: 100 }}
                             options={[
@@ -900,7 +960,7 @@ const ComponentMovie = () => {
                         </Grid>
                         <Grid item xs={3}>
                           <Select
-                            value={editIsTicket[0]?.isSellTicket == true ? 'Có' : 'Không'}
+                            defaultValue={editIsTicket[0]?.isSellTicket == true ? 'Có' : 'Không'}
                             placeholder="Ticket?"
                             style={{ width: 100 }}
                             options={[
@@ -1000,7 +1060,6 @@ const ComponentMovie = () => {
                           <Select
                             style={{ width: '400px' }}
                             placeholder="Chọn Độ Tuổi Của Phim"
-                            value={editMovieRate[0]?.rateName}
                             onChange={handleSelectEditMovieRate}
                             displayEmpty
                           >
@@ -1088,7 +1147,7 @@ const ComponentMovie = () => {
                               Đang Cập Nhật....
                             </Button>
                           ) : (
-                            <Button type="primary" success onClick={updateabanner}>
+                            <Button type="primary" success onClick={updateMovie}>
                               Cập Nhật
                             </Button>
                           )}
