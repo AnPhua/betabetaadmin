@@ -14,6 +14,12 @@ const utilities = {
       title: 'Food',
       type: 'item',
       url: 'food'
+    },
+    {
+      id: 'myRoom',
+      title: 'Room',
+      type: 'item',
+      url: 'room'
     }
   ]
 };

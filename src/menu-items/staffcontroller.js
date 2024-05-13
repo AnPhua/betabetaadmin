@@ -8,6 +8,12 @@ const staffctl = {
       title: 'Movie',
       type: 'item',
       url: 'movie'
+    },
+    {
+      id: 'myMovieType',
+      title: 'MovieType',
+      type: 'item',
+      url: 'movietype'
     }
   ]
 };
