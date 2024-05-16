@@ -2,18 +2,23 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
 import { Grid, Typography, Box, Paper, TableCell, TableContainer, Table, TableHead, TableRow, TableBody, IconButton } from '@mui/material';
-import { Input, Button, notification, Modal, Spin, InputNumber, Select } from 'antd';
+import { Input, Button, notification, Modal, Spin, Select } from 'antd';
 import MainCard from 'components/MainCard';
 import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/DeleteOutlined';
+import { MinusOutlined, PlusOutlined } from '@ant-design/icons';
 // import SaveIcon from '@mui/icons-material/Save';
 // import CancelIcon from '@mui/icons-material/Close';
-import { CreateRoom, DeleteRoom, GetRoomById, GetAllRooms, GetAllRoomNoPagination } from '../../services/controller/StaffController';
+import {
+  CreateRoom,
+  DeleteRoom,
+  GetRoomById,
+  GetAllRooms,
+  GetAllRoomNoPagination,
+  GetSeatTypes
+} from '../../services/controller/StaffController';
 import { TablePagination, Checkbox } from '@mui/material';
 const ComponentSeat = () => {
-  const { TextArea } = Input;
   const [rows, setRows] = useState([]);
-  const [rowsDetails, setRowsDetails] = useState([]);
   const [selected, setSelected] = useState([]);
   const [deletemodal, setDeleteModal] = useState(false);
 
@@ -22,12 +27,39 @@ const ComponentSeat = () => {
 
   // ADD A NEW MOVIE
   const [addChoseRoom, setChoseRoom] = useState([]);
+  const [addChoseSeatType, setChoseSeatType] = useState([]);
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [addCapacity, setAddCapacity] = useState(50);
   const [addNumberSeat, setAddNumberSeat] = useState(1);
   const [addDescription, setDescription] = useState('');
   const [isLoadingCreateRoom, setIsLoadingCreateRoom] = useState(false);
-
+  const [rowSeats, setRowSeats] = useState([{ id: 0 }]);
+  const [showAddButton, setShowAddButton] = useState(true);
+  const [showRemoveButton, setShowRemoveButton] = useState(false);
+  const addSeatRow = () => {
+    if (rowSeats.length < 10) {
+      const newRowId = rowSeats[rowSeats.length - 1].id + 1;
+      setRowSeats([...rowSeats, { id: newRowId }]);
+      setShowRemoveButton(true);
+      if (rowSeats.length === 9) {
+        setShowAddButton(false);
+      }
+    }
+  };
+  const removeSeatRow = () => {
+    if (rowSeats.length > 1) {
+      const newRows = [...rowSeats];
+      newRows.pop();
+      setRowSeats(newRows);
+      setShowAddButton(true);
+      if (newRows.length === 1) {
+        setShowRemoveButton(false);
+      }
+    }
+  };
+  const handSelectLine = (value) => {
+    console.log(`selected ${value}`);
+  };
   const handleSelectCinema = (selectedOption) => {
     setSelectedRoom(selectedOption);
   };
@@ -73,16 +105,13 @@ const ComponentSeat = () => {
   };
   //////////////////////////////////////////
   // UPDATE MOVIE
-  const [editNameRoom, setEditNameRoom] = useState('');
-  const [editCapacity, setEditCapacity] = useState('');
-  const [editDescription, setEditDescription] = useState('');
-  const [editSelectedCinema, setEditSelectedCinema] = useState(null);
-  const [editType, setEditType] = useState('');
   //const [isUpdatingRoom, setIsUpdatingRoom] = useState(false);
-  const showListRooms = async () => {
+  const showListRoomsandSeatType = async () => {
     const rescinema = await GetAllRoomNoPagination();
+    const resseattype = await GetSeatTypes();
     if (rescinema) {
       setChoseRoom(rescinema);
+      setChoseSeatType(resseattype);
     }
   };
   const handleEditSelectCinema = (selectedOption) => {
@@ -152,7 +181,7 @@ const ComponentSeat = () => {
 
   useEffect(() => {
     setIsComponentVisible(true);
-    showListRooms();
+    showListRoomsandSeatType();
     getAllRooms(metadt.PageNumber, metadt.PageSize);
   }, []);
 
@@ -191,7 +220,6 @@ const ComponentSeat = () => {
     setIdToDelete(id);
     setDeleteModal(true);
   };
-
   const getAllRooms = async (PageNumber, PageSize) => {
     let res = await GetAllRooms(PageNumber, PageSize);
     if (res && res.data) {
@@ -404,12 +432,12 @@ const ComponentSeat = () => {
                   <MainCard title="THÊM DANH SÁCH GHẾ" codeHighlight sx={{ borderWidth: 2 }}>
                     <Grid container spacing={0}>
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
-                        <Grid item xs={2}>
+                        <Grid item style={{ marginLeft: '175px', marginRight: '25px' }}>
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
                             Phòng
                           </Typography>
                         </Grid>
-                        <Grid item xs={3}>
+                        <Grid item>
                           <Select
                             style={{ width: '250px' }}
                             placeholder="Chọn Phòng"
@@ -426,50 +454,115 @@ const ComponentSeat = () => {
                         </Grid>
                       </Grid>
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
-                        <Grid item xs={2}>
-                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Số Ghế
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={3}>
-                          <InputNumber
-                            placeholder="Số Ghế"
-                            min={1}
-                            max={20}
-                            defaultValue={1}
-                            value={addNumberSeat}
-                            onChange={(value) => setAddNumberSeat(value)}
-                          />
-                        </Grid>
+                        {rowSeats.map((row, index) => (
+                          <Grid
+                            container
+                            item
+                            xs={12}
+                            spacing={0}
+                            direction="row"
+                            alignItems="center"
+                            style={{ marginBottom: '10px' }}
+                            key={index}
+                          >
+                            <Grid item style={{ marginLeft: '175px', marginRight: '30px' }}>
+                              <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
+                                Hàng
+                              </Typography>
+                            </Grid>
+                            <Grid>
+                              <Select
+                                defaultValue="A"
+                                style={{
+                                  width: 100
+                                }}
+                              >
+                                {['A', 'B', 'C', 'D', 'G', 'H', 'I', 'J', 'Z'].map((value) => (
+                                  <option key={value} value={value}>
+                                    {value}
+                                  </option>
+                                ))}
+                              </Select>
+                            </Grid>
+                            <Grid item xs={1}>
+                              <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
+                                Loại Ghế
+                              </Typography>
+                            </Grid>
+                            <Grid item xs={1}>
+                              <Select
+                                style={{ width: '150px' }}
+                                placeholder="Chọn Loại Ghế"
+                                value={selectedRoom}
+                                onChange={handleSelectCinema}
+                                displayEmpty
+                              >
+                                {addChoseSeatType.map((addChoseSeatType) => (
+                                  <option key={addChoseSeatType.id} value={addChoseSeatType.id}>
+                                    {addChoseSeatType.nameType}
+                                  </option>
+                                ))}
+                              </Select>
+                            </Grid>
+                          </Grid>
+                        ))}
                       </Grid>
-                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
-                        <Grid item xs={2}>
-                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Mô Tả
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={3}>
-                          <TextArea
-                            showCount
-                            maxLength={700}
-                            value={addDescription}
-                            onChange={(e) => setDescription(e.target.value)}
-                            placeholder="Mô Tả"
-                            style={{
-                              height: 130,
-                              width: 500,
-                              resize: 'none'
-                            }}
-                          />
-                        </Grid>
+                      <Grid container xs={12}>
+                        {showAddButton ? (
+                          <Grid
+                            item
+                            xs={1}
+                            spacing={0}
+                            direction="row"
+                            alignItems="left"
+                            style={{ marginBottom: '10px', cursor: 'pointer' }}
+                            onClick={addSeatRow}
+                          >
+                            <PlusOutlined />
+                            Thêm ghế
+                          </Grid>
+                        ) : (
+                          <Grid
+                            item
+                            xs={1}
+                            spacing={0}
+                            direction="row"
+                            alignItems="left"
+                            style={{ marginBottom: '10px', cursor: 'pointer' }}
+                            onClick={addSeatRow}
+                          ></Grid>
+                        )}
+                        {showRemoveButton ? (
+                          <Grid
+                            item
+                            spacing={0}
+                            direction="row"
+                            alignItems="right"
+                            style={{ marginBottom: '10px', cursor: 'pointer', marginLeft: '535px' }}
+                            onClick={removeSeatRow}
+                          >
+                            <MinusOutlined />
+                            Xóa ghế
+                          </Grid>
+                        ) : (
+                          <Grid
+                            item
+                            spacing={0}
+                            direction="row"
+                            alignItems="right"
+                            style={{ marginBottom: '10px', cursor: 'pointer', marginLeft: '535px' }}
+                            onClick={removeSeatRow}
+                          ></Grid>
+                        )}
                       </Grid>
+
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
                         <Grid item xs={2}>
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center"></Typography>
                         </Grid>
                         <Grid item xs={3}>
                           <Button type="primary" danger onClick={addANewMovie}>
-                            Thêm Phòng
+                            Thêm Danh Sách Ghế
                           </Button>
                         </Grid>
                       </Grid>
@@ -490,7 +583,7 @@ const ComponentSeat = () => {
         okText="Có"
         cancelText="Không"
       >
-        <p>Bạn Có Chắc Chắn Muốn Xóa Đồ Ăn Này Không?</p>
+        <p>Bạn Có Chắc Chắn Muốn Xóa ?</p>
       </Modal>
     </>
   );

@@ -207,6 +207,9 @@ const GetAllCinemaNoPagination = async () => {
 const GetAllRoomNoPagination = async () => {
   return axios.get(`api/admin/GetAllRoomNoPagination`);
 };
+const GetSeatTypes = async () => {
+  return axios.get(`api/admin/GetSeatTypes`);
+};
 export {
   GetAllMovie,
   GetMovieById,
@@ -221,5 +224,6 @@ export {
   UpdateRoom,
   DeleteRoom,
   GetAllCinemaNoPagination,
-  GetAllRoomNoPagination
+  GetAllRoomNoPagination,
+  GetSeatTypes
 };
