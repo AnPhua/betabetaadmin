@@ -1,23 +1,23 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
 import { Grid, Typography, Box, Paper, TableCell, TableContainer, Table, TableHead, TableRow, TableBody, IconButton } from '@mui/material';
-import { Input, Button, notification, Modal, Spin, InputNumber, Select } from 'antd';
+import { Input, Button, notification, Modal, Spin, Select, DatePicker } from 'antd';
 import MainCard from 'components/MainCard';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
-// import SaveIcon from '@mui/icons-material/Save';
-// import CancelIcon from '@mui/icons-material/Close';
+import moment from 'moment';
+import dayjs from 'dayjs';
 import {
-  CreateRoom,
-  DeleteRoom,
-  GetRoomById,
-  UpdateRoom,
-  GetAllRooms,
-  GetAllCinemaNoPagination
-} from '../../services/controller/StaffController';
+  GetAllSchedules,
+  GetAllRoomNoPagination,
+  GetAllMovieNoPagination,
+  CreateSchedule,
+  DeleteSchedule,
+  GetSchedulesById,
+  UpdateSchedules
+} from 'services/controller/ScheduleController';
 import { TablePagination, Checkbox } from '@mui/material';
-const ComponentRoom = () => {
-  const { TextArea } = Input;
+const ComponentSchedules = () => {
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [deletemodal, setDeleteModal] = useState(false);
@@ -25,29 +25,56 @@ const ComponentRoom = () => {
   const [idToDelete, setIdToDelete] = useState('');
   const [idToUpdate, setIdToUpdate] = useState('');
 
-  // ADD A NEW MOVIE
-  const [addNameRoom, setAddNameRoom] = useState('');
-  const [addChoseCinema, setChoseCinema] = useState([]);
-  const [selectedCinema, setSelectedCinema] = useState(null);
-  const [addCapacity, setAddCapacity] = useState(50);
-  const [addType, setAddType] = useState(1);
-  const [addDescription, setDescription] = useState('');
-  const [isLoadingCreateRoom, setIsLoadingCreateRoom] = useState(false);
+  // ADD A NEW SCHEDULES
+  const [addPreDate, setAddPreDate] = useState('');
+  const [addNameSchedules, setAddNameSchedules] = useState('');
+  const [addChoseMovie, setChoseMovie] = useState([]);
+  const [addChoseRoom, setChoseRoom] = useState([]);
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [selectedRoom, setSelectedRoom] = useState(null);
+  const [isLoadingCreateSchedule, setIsLoadingCreateSchedule] = useState(false);
+  const onChangeStartTime = (_, dateStr) => {
+    setAddPreDate(dateStr);
+  };
+  const formatDateTime = (dateTimeString) => {
+    const dateTime = new Date(dateTimeString);
+    const day = dateTime.getDate();
+    const month = dateTime.getMonth() + 1;
+    const year = dateTime.getFullYear();
+    const hours = dateTime.getHours();
+    const minutes = dateTime.getMinutes();
 
-  const handleSelectCinema = (selectedOption) => {
-    setSelectedCinema(selectedOption);
+    const formattedDateTime = `${day < 10 ? '0' + day : day}-${month < 10 ? '0' + month : month}-${year} | ${hours < 10 ? '0' + hours : hours}:${minutes < 10 ? '0' + minutes : minutes}`;
+
+    return formattedDateTime;
+  };
+  const formatDateSendtoServer = (date) => {
+    let formattedDateTime = null;
+    if (date) {
+      formattedDateTime = moment(date).format('YYYY-MM-DDTHH:mm:ss.SSS');
+    }
+    return formattedDateTime;
+  };
+  const handleSelectMovie = (selectedOption) => {
+    setSelectedMovie(selectedOption);
+  };
+  const handleSelectRoom = (selectedOption) => {
+    setSelectedRoom(selectedOption);
   };
   const addANewMovie = async () => {
     let errorMessage = '';
     switch (true) {
-      case !addNameRoom:
-        errorMessage = 'Vui lòng nhập tên phòng!';
+      case !addPreDate:
+        errorMessage = 'Vui lòng chọn lịch chiếu chiếu!';
         break;
-      case !selectedCinema:
-        errorMessage = 'Vui lòng chọn rạp!';
+      case !addNameSchedules:
+        errorMessage = 'Vui lòng nhập tên lịch chiếu!';
         break;
-      case !addDescription:
-        errorMessage = 'Vui lòng nhập mô tả!';
+      case !selectedMovie:
+        errorMessage = 'Vui lòng chọn Phim!';
+        break;
+      case !selectedRoom:
+        errorMessage = 'Vui lòng chọn Phòng!';
         break;
       default:
         break;
@@ -61,64 +88,69 @@ const ComponentRoom = () => {
       return;
     }
 
-    const addroom = {
-      capacity: addCapacity,
-      type: addType,
-      description: addDescription,
-      cinemaId: selectedCinema,
-      name: addNameRoom,
-      request_CreateSeats: null
+    const addschedules = {
+      movieId: selectedMovie,
+      startAt: formatDateSendtoServer(addPreDate),
+      name: addNameSchedules,
+      roomId: selectedRoom
     };
-    await CreateRoom(addroom, setIsLoadingCreateRoom);
-    await getAllRooms(metadt.PageNumber, metadt.PageSize);
-    setAddNameRoom('');
-    setSelectedCinema(null);
-    setAddCapacity(50);
-    setAddType(1);
-    setDescription('');
+    await CreateSchedule(addschedules, setIsLoadingCreateSchedule);
+    await getAllSchedules(metadt.PageNumber, metadt.PageSize);
+    setAddNameSchedules('');
+    setSelectedMovie(null);
+    setSelectedRoom(null);
+    setAddPreDate('');
   };
   //////////////////////////////////////////
   // UPDATE MOVIE
-  const [editNameRoom, setEditNameRoom] = useState('');
-  const [editCapacity, setEditCapacity] = useState('');
-  const [editDescription, setEditDescription] = useState('');
-  const [editSelectedCinema, setEditSelectedCinema] = useState(null);
-  const [editType, setEditType] = useState('');
-  const [isUpdatingRoom, setIsUpdatingRoom] = useState(false);
-  const showListCinema = async () => {
-    const rescinema = await GetAllCinemaNoPagination();
-    if (rescinema) {
-      setChoseCinema(rescinema);
+  const [editPreDate, setEditPreDate] = useState('');
+  const [editNameSchedules, setEditNameSchedules] = useState('');
+  const [selectedEditMovie, setSelectedEditMovie] = useState(null);
+  const [selectedEditRoom, setSelectedEditRoom] = useState(null);
+  const [isUpdatingSchedules, setIsUpdatingSchedules] = useState(false);
+  const showListMovie = async () => {
+    const rescinema = await GetAllMovieNoPagination();
+    const resroom = await GetAllRoomNoPagination();
+    if (rescinema && resroom) {
+      setChoseMovie(rescinema);
+      setChoseRoom(resroom);
     }
   };
-  const handleEditSelectCinema = (selectedOption) => {
-    setEditSelectedCinema(selectedOption);
+  const onChangeEditStartTime = (_, dateStr) => {
+    setEditPreDate(dateStr);
+  };
+  const handleEditSelectMovie = (selectedOption) => {
+    setSelectedEditMovie(selectedOption);
+  };
+  const handleEditSelectRoom = (selectedOption) => {
+    setSelectedEditRoom(selectedOption);
   };
   const showDataMovie = async (id) => {
     try {
       setIdToUpdate(id);
-      const res = await GetRoomById(id);
+      const res = await GetSchedulesById(id);
       if (res && res.data) {
-        setEditNameRoom(res.data.name);
-        setEditCapacity(res.data.capacity);
-        setEditDescription(res.data.description);
-        setEditType(res.data.type);
+        setEditPreDate(res.data.startAt);
+        setEditNameSchedules(res.data.name);
       }
     } catch (error) {
       console.error('Error while fetching movie by ID:', error);
     }
   };
-  const updateRoom = async () => {
+  const updateSchedule = async () => {
     let errorMessage = '';
     switch (true) {
-      case !editNameRoom:
-        errorMessage = 'Vui lòng nhập tên phòng!';
+      case !editPreDate:
+        errorMessage = 'Vui lòng chọn lịch chiếu chiếu!';
         break;
-      case !editSelectedCinema:
-        errorMessage = 'Vui lòng chọn rạp!';
+      case !editNameSchedules:
+        errorMessage = 'Vui lòng nhập tên lịch chiếu!';
         break;
-      case !editDescription:
-        errorMessage = 'Vui lòng nhập mô tả!';
+      case !selectedEditMovie:
+        errorMessage = 'Vui lòng chọn Phim!';
+        break;
+      case !selectedEditRoom:
+        errorMessage = 'Vui lòng chọn Phòng!';
         break;
       default:
         break;
@@ -131,25 +163,21 @@ const ComponentRoom = () => {
       });
       return;
     }
-    const udroom = {
-      roomId: idToUpdate,
-      capacity: editCapacity,
-      type: editType,
-      description: editDescription,
-      cinemaId: editSelectedCinema,
-      name: editNameRoom,
-      request_CreateSeats: null
+    const udsch = {
+      scheduleId: idToUpdate,
+      movieId: selectedEditMovie,
+      startAt: formatDateSendtoServer(editPreDate),
+      name: editNameSchedules,
+      roomId: selectedEditRoom
     };
 
-    await UpdateRoom(udroom, setIsUpdatingRoom);
-    await getAllRooms(metadt.PageNumber, metadt.PageSize);
+    await UpdateSchedules(udsch, setIsUpdatingSchedules);
+    await getAllSchedules(metadt.PageNumber, metadt.PageSize);
     setIdToUpdate('');
-    setEditNameRoom('');
-    handleEditSelectCinema('');
-    setEditSelectedCinema('');
-    setEditCapacity(50);
-    setEditType(1);
-    setEditDescription('');
+    setEditNameSchedules('');
+    setEditPreDate('');
+    handleEditSelectMovie('');
+    handleEditSelectRoom('');
   };
   /////////////////////////////////////////
   const [isComponentVisible, setIsComponentVisible] = useState(false);
@@ -158,24 +186,24 @@ const ComponentRoom = () => {
 
   useEffect(() => {
     setIsComponentVisible(true);
-    showListCinema();
-    getAllRooms(metadt.PageNumber, metadt.PageSize);
+    showListMovie();
+    getAllSchedules(metadt.PageNumber, metadt.PageSize);
   }, []);
 
   const isSelected = (id) => selected.indexOf(id) !== -1;
   const handleDeleteClick = async () => {
     if (idToDelete) {
-      await DeleteRoom(idToDelete);
+      await DeleteSchedule(idToDelete);
       setDeleteModal(false);
       setIdToDelete('');
-      await getAllRooms(1, metadt.PageSize);
+      await getAllSchedules(1, metadt.PageSize);
     }
   };
   const onPageChange = (e, newpage) => {
-    getAllRooms(newpage + 1, metadt.PageSize);
+    getAllSchedules(newpage + 1, metadt.PageSize);
   };
   const onRowsPerPageChange = (e) => {
-    getAllRooms(1, e.target.value);
+    getAllSchedules(1, e.target.value);
   };
 
   const handleClick = (event, id) => {
@@ -198,8 +226,8 @@ const ComponentRoom = () => {
     setDeleteModal(true);
   };
 
-  const getAllRooms = async (PageNumber, PageSize) => {
-    let res = await GetAllRooms(PageNumber, PageSize);
+  const getAllSchedules = async (PageNumber, PageSize) => {
+    let res = await GetAllSchedules(PageNumber, PageSize);
     if (res && res.data) {
       setRows(res.data);
       setMetaDt({ totalItems: res.totalItems, PageNumber: res.pageNumber, PageSize: res.pageSize });
@@ -211,14 +239,14 @@ const ComponentRoom = () => {
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '120vh' }}>
         {isComponentVisible && (
           <Grid container spacing={3}>
-            {isLoadingCreateRoom ? (
+            {isLoadingCreateSchedule ? (
               <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center' }}>
-                <Spin spinning={isLoadingCreateRoom} delay={500} />
+                <Spin spinning={isLoadingCreateSchedule} delay={500} />
               </Grid>
             ) : (
               <>
                 <Grid item xs={14}>
-                  <MainCard title="CHI TIẾT PHÒNG" codeHighlight sx={{ borderWidth: 2 }}>
+                  <MainCard title="CHI TIẾT LỊCH CHIẾU" codeHighlight sx={{ borderWidth: 2 }}>
                     <Grid container spacing={0} direction="row">
                       <div style={{ width: '100%' }}>
                         <Box
@@ -239,9 +267,10 @@ const ComponentRoom = () => {
                                 <TableHead>
                                   <TableRow>
                                     <TableCell />
-                                    <TableCell align="center">Sức Chứa</TableCell>
-                                    <TableCell align="center">Mô Tả</TableCell>
-                                    <TableCell align="center">Phòng Của Rạp</TableCell>
+                                    <TableCell align="center">Thời Gian Bắt Đầu</TableCell>
+                                    <TableCell align="center">Thời Gian Kết Thúc</TableCell>
+                                    <TableCell align="center">Tên Phim</TableCell>
+                                    <TableCell align="center">Tên Lịch Chiếu</TableCell>
                                     <TableCell align="center">Tên Phòng</TableCell>
                                   </TableRow>
                                 </TableHead>
@@ -269,10 +298,11 @@ const ComponentRoom = () => {
                                             }}
                                           />
                                         </TableCell>
-                                        <TableCell align="center">{row.capacity}</TableCell>
-                                        <TableCell align="center">{row.description}</TableCell>
-                                        <TableCell align="center">{row.cinemaName}</TableCell>
+                                        <TableCell align="center">{formatDateTime(row.startAt)}</TableCell>
+                                        <TableCell align="center">{formatDateTime(row.endAt)}</TableCell>
+                                        <TableCell align="center">{row.movieName}</TableCell>
                                         <TableCell align="center">{row.name}</TableCell>
+                                        <TableCell align="center">{row.roomName}</TableCell>
                                         <TableCell align="center" sx={{ width: '10%' }}>
                                           <IconButton aria-label="edit" size="small">
                                             <EditIcon onClick={() => showDataMovie(row.id)} />
@@ -304,107 +334,84 @@ const ComponentRoom = () => {
                   </MainCard>
                 </Grid>
                 <Grid item xs={6}>
-                  <MainCard title="THÊM PHÒNG" codeHighlight sx={{ borderWidth: 2 }}>
+                  <MainCard title="THÊM LỊCH CHIẾU" codeHighlight sx={{ borderWidth: 2 }}>
                     <Grid container spacing={0}>
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
-                        <Grid item xs={2}>
+                        <Grid item xs={3}>
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Sức Chứa
+                            Thời Gian Chiếu Phim
                           </Typography>
                         </Grid>
                         <Grid item xs={3}>
-                          <InputNumber
-                            placeholder="Sức Chứa"
-                            min={50}
-                            max={300}
-                            defaultValue={100}
-                            value={addCapacity}
-                            onChange={(value) => setAddCapacity(value)}
-                          />
+                          <DatePicker showTime onChange={onChangeStartTime} placeholder="Chọn ngày và giờ" />
                         </Grid>
                       </Grid>
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
-                        <Grid item xs={2}>
+                        <Grid item xs={3}>
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Phòng Của Rạp
+                            Phim
                           </Typography>
                         </Grid>
                         <Grid item xs={3}>
                           <Select
-                            style={{ width: '250px' }}
-                            placeholder="Chọn Rạp"
-                            value={selectedCinema}
-                            onChange={handleSelectCinema}
+                            style={{ width: '350px' }}
+                            placeholder="Chọn Phim"
+                            value={selectedMovie}
+                            onChange={handleSelectMovie}
                             displayEmpty
                           >
-                            {addChoseCinema.map((addChoseCinema) => (
-                              <option key={addChoseCinema.id} value={addChoseCinema.id}>
-                                {addChoseCinema.nameOfCinema}
+                            {addChoseMovie.map((addChoseMovie) => (
+                              <option key={addChoseMovie.id} value={addChoseMovie.id}>
+                                {addChoseMovie.name}
                               </option>
                             ))}
                           </Select>
                         </Grid>
                       </Grid>
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
-                        <Grid item xs={2}>
-                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Loại Phòng
-                          </Typography>
-                        </Grid>
                         <Grid item xs={3}>
-                          <InputNumber
-                            placeholder="Loại phòng"
-                            min={1}
-                            max={5}
-                            defaultValue={1}
-                            value={addType}
-                            onChange={(value) => setAddType(value)}
-                          />
-                        </Grid>
-                      </Grid>
-                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
-                        <Grid item xs={2}>
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Tên Phòng
+                            Tên Lịch Chiếu
                           </Typography>
                         </Grid>
                         <Grid item xs={3}>
                           <Input
-                            placeholder="Tên Phòng"
-                            value={addNameRoom}
+                            placeholder="Tên Lịch Chiếu"
+                            value={addNameSchedules}
                             style={{ width: '400px' }}
-                            onChange={(e) => setAddNameRoom(e.target.value)}
+                            onChange={(e) => setAddNameSchedules(e.target.value)}
                           />
                         </Grid>
                       </Grid>
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
-                        <Grid item xs={2}>
+                        <Grid item xs={3}>
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Mô Tả
+                            Phòng
                           </Typography>
                         </Grid>
                         <Grid item xs={3}>
-                          <TextArea
-                            showCount
-                            maxLength={700}
-                            value={addDescription}
-                            onChange={(e) => setDescription(e.target.value)}
-                            placeholder="Mô Tả"
-                            style={{
-                              height: 130,
-                              width: 500,
-                              resize: 'none'
-                            }}
-                          />
+                          <Select
+                            style={{ width: '350px' }}
+                            placeholder="Chọn Phòng"
+                            value={selectedMovie}
+                            onChange={handleSelectRoom}
+                            displayEmpty
+                          >
+                            {addChoseRoom.map((addChoseRoom) => (
+                              <option key={addChoseRoom.id} value={addChoseRoom.id}>
+                                {addChoseRoom.name}
+                              </option>
+                            ))}
+                          </Select>
                         </Grid>
                       </Grid>
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
-                        <Grid item xs={2}>
+                        <Grid item xs={3}>
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center"></Typography>
                         </Grid>
                         <Grid item xs={3}>
                           <Button type="primary" danger onClick={addANewMovie}>
-                            Thêm Phòng
+                            Thêm Lịch Chiếu
                           </Button>
                         </Grid>
                       </Grid>
@@ -412,111 +419,88 @@ const ComponentRoom = () => {
                   </MainCard>
                 </Grid>
                 <Grid item xs={6}>
-                  <MainCard title="CẬP NHẬT PHÒNG" codeHighlight sx={{ borderWidth: 2 }}>
+                  <MainCard title="CẬP NHẬT LỊCH CHIẾU" codeHighlight sx={{ borderWidth: 2 }}>
                     <Grid container spacing={0}>
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
-                        <Grid item xs={2}>
+                        <Grid item xs={3}>
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Sức Chứa
+                            Thời Gian Chiếu Phim
                           </Typography>
                         </Grid>
                         <Grid item xs={3}>
-                          <InputNumber
-                            placeholder="Sức Chứa"
-                            min={50}
-                            max={300}
-                            defaultValue={100}
-                            value={editCapacity}
-                            onChange={(value) => setEditCapacity(value)}
-                          />
+                          <DatePicker value={dayjs(editPreDate)} showTime onChange={onChangeEditStartTime} placeholder="Chọn ngày và giờ" />
                         </Grid>
                       </Grid>
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
-                        <Grid item xs={2}>
+                        <Grid item xs={3}>
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Phòng Của Rạp
+                            Phim
                           </Typography>
                         </Grid>
                         <Grid item xs={3}>
                           <Select
-                            style={{ width: '250px' }}
-                            value={editSelectedCinema}
-                            placeholder="Chọn Rạp"
-                            onChange={handleEditSelectCinema}
+                            style={{ width: '350px' }}
+                            placeholder="Chọn Phim"
+                            value={selectedEditMovie}
+                            onChange={handleEditSelectMovie}
                             displayEmpty
                           >
-                            {addChoseCinema.map((addChoseCinema) => (
-                              <option key={addChoseCinema.id} value={addChoseCinema.id}>
-                                {addChoseCinema.nameOfCinema}
+                            {addChoseMovie.map((addChoseMovie) => (
+                              <option key={addChoseMovie.id} value={addChoseMovie.id}>
+                                {addChoseMovie.name}
                               </option>
                             ))}
                           </Select>
                         </Grid>
                       </Grid>
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
-                        <Grid item xs={2}>
-                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Loại Phòng
-                          </Typography>
-                        </Grid>
                         <Grid item xs={3}>
-                          <InputNumber
-                            placeholder="Loại phòng"
-                            min={1}
-                            max={5}
-                            defaultValue={1}
-                            value={editType}
-                            onChange={(value) => setEditType(value)}
-                          />
-                        </Grid>
-                      </Grid>
-                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
-                        <Grid item xs={2}>
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Tên Phòng
+                            Tên Lịch Chiếu
                           </Typography>
                         </Grid>
                         <Grid item xs={3}>
                           <Input
-                            placeholder="Tên Phòng"
-                            value={editNameRoom}
+                            placeholder="Tên Lịch Chiếu"
+                            value={editNameSchedules}
                             style={{ width: '400px' }}
-                            onChange={(e) => setEditNameRoom(e.target.value)}
+                            onChange={(e) => setEditNameSchedules(e.target.value)}
                           />
                         </Grid>
                       </Grid>
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
-                        <Grid item xs={2}>
+                        <Grid item xs={3}>
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Mô Tả
+                            Phòng
                           </Typography>
                         </Grid>
                         <Grid item xs={3}>
-                          <TextArea
-                            showCount
-                            maxLength={700}
-                            value={editDescription}
-                            onChange={(e) => setEditDescription(e.target.value)}
-                            placeholder="Mô Tả"
-                            style={{
-                              height: 130,
-                              width: 500,
-                              resize: 'none'
-                            }}
-                          />
+                          <Select
+                            style={{ width: '350px' }}
+                            placeholder="Chọn Phòng"
+                            value={selectedEditRoom}
+                            onChange={handleEditSelectRoom}
+                            displayEmpty
+                          >
+                            {addChoseRoom.map((addChoseRoom) => (
+                              <option key={addChoseRoom.id} value={addChoseRoom.id}>
+                                {addChoseRoom.name}
+                              </option>
+                            ))}
+                          </Select>
                         </Grid>
                       </Grid>
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
-                        <Grid item xs={2}>
+                        <Grid item xs={3}>
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center"></Typography>
                         </Grid>
                         <Grid item xs={3}>
-                          {isUpdatingRoom ? (
+                          {isUpdatingSchedules ? (
                             <Button type="primary" success loading>
                               Đang Cập Nhật....
                             </Button>
                           ) : (
-                            <Button type="primary" success onClick={updateRoom}>
+                            <Button type="primary" success onClick={updateSchedule}>
                               Cập Nhật
                             </Button>
                           )}
@@ -544,4 +528,4 @@ const ComponentRoom = () => {
   );
 };
 
-export default ComponentRoom;
+export default ComponentSchedules;

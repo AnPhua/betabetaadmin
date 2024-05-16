@@ -20,6 +20,12 @@ const utilities = {
       title: 'Room',
       type: 'item',
       url: 'room'
+    },
+    {
+      id: 'mySeats',
+      title: 'Seat',
+      type: 'item',
+      url: 'seat'
     }
   ]
 };

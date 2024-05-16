@@ -7,8 +7,7 @@ import MainCard from 'components/MainCard';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 import { PlusOutlined } from '@ant-design/icons';
-// import SaveIcon from '@mui/icons-material/Save';
-// import CancelIcon from '@mui/icons-material/Close';
+import moment from 'moment';
 import {
   CreateMovie,
   DeleteMovie,
@@ -30,7 +29,6 @@ const getBase64 = (file) =>
     reader.onload = () => resolve(reader.result);
     reader.onerror = (error) => reject(error);
   });
-//const { RangePicker } = DatePicker;
 const ComponentMovie = () => {
   const { TextArea } = Input;
   const [rows, setRows] = useState([]);
@@ -70,7 +68,13 @@ const ComponentMovie = () => {
   const handleSelectIsHot = (selectedOption) => {
     setAddIsHot(selectedOption === 'Có' ? 'True' : 'False');
   };
-
+  // const formatDateSendtoServer = (date) => {
+  //   let formattedDateTime = null;
+  //   if (date) {
+  //     formattedDateTime = moment(date).format('YYYY-MM-DDTHH:mm:ss');
+  //   }
+  //   return formattedDateTime;
+  // };
   const handleSelectMovieType = (selectedOption) => {
     setSelectedMovieType(selectedOption);
   };
@@ -206,10 +210,10 @@ const ComponentMovie = () => {
     setPreviewOpen(true);
   };
   const handleEditSelectIsHot = (selectedOption) => {
-    setEditIsHot([{ isHot: selectedOption === 'Có' ? 'True' : 'False' }]);
+    setEditIsHot([{ isHot: selectedOption }]);
   };
   const handleEditSelectIsTicket = (selectedOption) => {
-    setEditIsTicket([{ isSellTicket: selectedOption === 'Có' ? 'True' : 'False' }]);
+    setEditIsTicket([{ isSellTicket: selectedOption }]);
   };
   const handleEditPreDateChange = (date, dateString) => {
     if (dateString === '') {
@@ -220,9 +224,9 @@ const ComponentMovie = () => {
   };
   const handleEditEndDateChange = (date, dateString) => {
     if (dateString === '') {
-      setEditEndDate([{ premiereDate: null }]);
+      setEditEndDate([{ endTime: null }]);
     } else {
-      setEditEndDate([{ premiereDate: dateString }]);
+      setEditEndDate([{ endTime: dateString }]);
     }
   };
   const handleChangeForImage = ({ fileList: newFileList }) => {
@@ -369,7 +373,6 @@ const ComponentMovie = () => {
     formData.append('Caster', editCaster[0]?.caster);
     formData.append('Director', editDirector[0]?.director);
     formData.append('Description', editDescription[0]?.description);
-
     if (checkTypeImage && checkTypeHeroImage) {
       await UpdateMovieHaveString(formData, setIsUpdatingMovie);
       await getAllMovies(metadt.PageNumber, metadt.PageSize);
@@ -392,6 +395,10 @@ const ComponentMovie = () => {
     setEditIsTicket('');
     setEditSelectedMovieType('');
     setEditSelectedMovieRate('');
+    handleSelectEditMovieRate('');
+    handleSelectEditMovieType('');
+    setEditEndDate('');
+    setEditPreDate('');
     setEditLanguage('');
     handleEditPreDateChange('');
     handleEditEndDateChange('');
@@ -871,6 +878,7 @@ const ComponentMovie = () => {
                         <Grid item xs={3}>
                           <Select
                             style={{ width: '250px' }}
+                            value={editSelectedMovieType}
                             placeholder="Chọn Thể Loại Phim"
                             onChange={handleSelectEditMovieType}
                             displayEmpty
@@ -943,7 +951,6 @@ const ComponentMovie = () => {
                         </Grid>
                         <Grid item xs={3}>
                           <Select
-                            defaultValue={editIsHot[0]?.isHot == true ? 'Có' : 'Không'}
                             placeholder="Hot?"
                             style={{ width: 100 }}
                             options={[
@@ -960,7 +967,6 @@ const ComponentMovie = () => {
                         </Grid>
                         <Grid item xs={3}>
                           <Select
-                            defaultValue={editIsTicket[0]?.isSellTicket == true ? 'Có' : 'Không'}
                             placeholder="Ticket?"
                             style={{ width: 100 }}
                             options={[
@@ -1060,6 +1066,7 @@ const ComponentMovie = () => {
                           <Select
                             style={{ width: '400px' }}
                             placeholder="Chọn Độ Tuổi Của Phim"
+                            value={editSelectedMovieRate}
                             onChange={handleSelectEditMovieRate}
                             displayEmpty
                           >

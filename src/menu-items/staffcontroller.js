@@ -14,6 +14,12 @@ const staffctl = {
       title: 'MovieType',
       type: 'item',
       url: 'movietype'
+    },
+    {
+      id: 'mySchedule',
+      title: 'Schedule',
+      type: 'item',
+      url: 'schedule'
     }
   ]
 };

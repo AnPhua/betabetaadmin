@@ -5,6 +5,9 @@ const token = localStorage.getItem('accesstoken');
 const GetAllMovie = (PageNumber, PageSize) => {
   return axios.get(`api/staff/GetAllMovie?PageNumber=${PageNumber}&PageSize=${PageSize}`);
 };
+const GetAllRooms = (pageNumber, pageSize) => {
+  return axios.get(`api/admin/GetAllRooms?pageSize=${pageSize}&pageNumber=${pageNumber}`);
+};
 const GetMovieById = (movieId) => {
   return axios.get(`api/staff/GetMovieById?movieId=${movieId}`);
 };
@@ -104,9 +107,7 @@ const DeleteMovieType = async (id) => {
     });
   }
 };
-const GetAllRooms = async (pageNumber, pageSize) => {
-  return axios.get(`api/admin/GetAllRooms?PageNumber=${pageNumber}&PageSize=${pageSize}`);
-};
+
 const GetRoomById = (roomId) => {
   return axios.get(`api/admin/GetRoomById/${roomId}`);
 };
@@ -161,7 +162,7 @@ const UpdateRoom = async (udroom, setIsUpdatingRoom) => {
     } else if (res.status === 400) {
       notification.error({
         message: 'Lỗi',
-        description: res.data.message
+        description: res.message
       });
     } else {
       notification.error({
@@ -203,6 +204,9 @@ const DeleteRoom = async (id) => {
 const GetAllCinemaNoPagination = async () => {
   return axios.get(`api/admin/GetAllCinemaNoPagination`);
 };
+const GetAllRoomNoPagination = async () => {
+  return axios.get(`api/admin/GetAllRoomNoPagination`);
+};
 export {
   GetAllMovie,
   GetMovieById,
@@ -216,5 +220,6 @@ export {
   CreateRoom,
   UpdateRoom,
   DeleteRoom,
-  GetAllCinemaNoPagination
+  GetAllCinemaNoPagination,
+  GetAllRoomNoPagination
 };

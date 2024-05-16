@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
 import { Grid, Typography, Box, Paper, TableCell, TableContainer, Table, TableHead, TableRow, TableBody, IconButton } from '@mui/material';
@@ -7,18 +8,12 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 // import SaveIcon from '@mui/icons-material/Save';
 // import CancelIcon from '@mui/icons-material/Close';
-import {
-  CreateRoom,
-  DeleteRoom,
-  GetRoomById,
-  UpdateRoom,
-  GetAllRooms,
-  GetAllCinemaNoPagination
-} from '../../services/controller/StaffController';
+import { CreateRoom, DeleteRoom, GetRoomById, GetAllRooms, GetAllRoomNoPagination } from '../../services/controller/StaffController';
 import { TablePagination, Checkbox } from '@mui/material';
-const ComponentRoom = () => {
+const ComponentSeat = () => {
   const { TextArea } = Input;
   const [rows, setRows] = useState([]);
+  const [rowsDetails, setRowsDetails] = useState([]);
   const [selected, setSelected] = useState([]);
   const [deletemodal, setDeleteModal] = useState(false);
 
@@ -26,16 +21,15 @@ const ComponentRoom = () => {
   const [idToUpdate, setIdToUpdate] = useState('');
 
   // ADD A NEW MOVIE
-  const [addNameRoom, setAddNameRoom] = useState('');
-  const [addChoseCinema, setChoseCinema] = useState([]);
-  const [selectedCinema, setSelectedCinema] = useState(null);
+  const [addChoseRoom, setChoseRoom] = useState([]);
+  const [selectedRoom, setSelectedRoom] = useState(null);
   const [addCapacity, setAddCapacity] = useState(50);
-  const [addType, setAddType] = useState(1);
+  const [addNumberSeat, setAddNumberSeat] = useState(1);
   const [addDescription, setDescription] = useState('');
   const [isLoadingCreateRoom, setIsLoadingCreateRoom] = useState(false);
 
   const handleSelectCinema = (selectedOption) => {
-    setSelectedCinema(selectedOption);
+    setSelectedRoom(selectedOption);
   };
   const addANewMovie = async () => {
     let errorMessage = '';
@@ -43,7 +37,7 @@ const ComponentRoom = () => {
       case !addNameRoom:
         errorMessage = 'Vui lòng nhập tên phòng!';
         break;
-      case !selectedCinema:
+      case !selectedRoom:
         errorMessage = 'Vui lòng chọn rạp!';
         break;
       case !addDescription:
@@ -63,18 +57,18 @@ const ComponentRoom = () => {
 
     const addroom = {
       capacity: addCapacity,
-      type: addType,
+      type: addNumberSeat,
       description: addDescription,
-      cinemaId: selectedCinema,
+      cinemaId: selectedRoom,
       name: addNameRoom,
       request_CreateSeats: null
     };
     await CreateRoom(addroom, setIsLoadingCreateRoom);
     await getAllRooms(metadt.PageNumber, metadt.PageSize);
     setAddNameRoom('');
-    setSelectedCinema(null);
+    setSelectedRoom(null);
     setAddCapacity(50);
-    setAddType(1);
+    setAddNumberSeat(1);
     setDescription('');
   };
   //////////////////////////////////////////
@@ -84,11 +78,11 @@ const ComponentRoom = () => {
   const [editDescription, setEditDescription] = useState('');
   const [editSelectedCinema, setEditSelectedCinema] = useState(null);
   const [editType, setEditType] = useState('');
-  const [isUpdatingRoom, setIsUpdatingRoom] = useState(false);
-  const showListCinema = async () => {
-    const rescinema = await GetAllCinemaNoPagination();
+  //const [isUpdatingRoom, setIsUpdatingRoom] = useState(false);
+  const showListRooms = async () => {
+    const rescinema = await GetAllRoomNoPagination();
     if (rescinema) {
-      setChoseCinema(rescinema);
+      setChoseRoom(rescinema);
     }
   };
   const handleEditSelectCinema = (selectedOption) => {
@@ -108,49 +102,49 @@ const ComponentRoom = () => {
       console.error('Error while fetching movie by ID:', error);
     }
   };
-  const updateRoom = async () => {
-    let errorMessage = '';
-    switch (true) {
-      case !editNameRoom:
-        errorMessage = 'Vui lòng nhập tên phòng!';
-        break;
-      case !editSelectedCinema:
-        errorMessage = 'Vui lòng chọn rạp!';
-        break;
-      case !editDescription:
-        errorMessage = 'Vui lòng nhập mô tả!';
-        break;
-      default:
-        break;
-    }
+  //   const updateRoom = async () => {
+  //     let errorMessage = '';
+  //     switch (true) {
+  //       case !editNameRoom:
+  //         errorMessage = 'Vui lòng nhập tên phòng!';
+  //         break;
+  //       case !editSelectedCinema:
+  //         errorMessage = 'Vui lòng chọn rạp!';
+  //         break;
+  //       case !editDescription:
+  //         errorMessage = 'Vui lòng nhập mô tả!';
+  //         break;
+  //       default:
+  //         break;
+  //     }
 
-    if (errorMessage) {
-      notification.error({
-        message: 'Lỗi',
-        description: errorMessage
-      });
-      return;
-    }
-    const udroom = {
-      roomId: idToUpdate,
-      capacity: editCapacity,
-      type: editType,
-      description: editDescription,
-      cinemaId: editSelectedCinema,
-      name: editNameRoom,
-      request_CreateSeats: null
-    };
+  //     if (errorMessage) {
+  //       notification.error({
+  //         message: 'Lỗi',
+  //         description: errorMessage
+  //       });
+  //       return;
+  //     }
+  //     const udroom = {
+  //       roomId: idToUpdate,
+  //       capacity: editCapacity,
+  //       type: editType,
+  //       description: editDescription,
+  //       cinemaId: editSelectedCinema,
+  //       name: editNameRoom,
+  //       request_CreateSeats: null
+  //     };
 
-    await UpdateRoom(udroom, setIsUpdatingRoom);
-    await getAllRooms(metadt.PageNumber, metadt.PageSize);
-    setIdToUpdate('');
-    setEditNameRoom('');
-    handleEditSelectCinema('');
-    setEditSelectedCinema('');
-    setEditCapacity(50);
-    setEditType(1);
-    setEditDescription('');
-  };
+  //     await UpdateRoom(udroom, setIsUpdatingRoom);
+  //     await getAllRooms(metadt.PageNumber, metadt.PageSize);
+  //     setIdToUpdate('');
+  //     setEditNameRoom('');
+  //     handleEditSelectCinema('');
+  //     setEditSelectedCinema('');
+  //     setEditCapacity(50);
+  //     setEditType(1);
+  //     setEditDescription('');
+  //   };
   /////////////////////////////////////////
   const [isComponentVisible, setIsComponentVisible] = useState(false);
 
@@ -158,7 +152,7 @@ const ComponentRoom = () => {
 
   useEffect(() => {
     setIsComponentVisible(true);
-    showListCinema();
+    showListRooms();
     getAllRooms(metadt.PageNumber, metadt.PageSize);
   }, []);
 
@@ -205,7 +199,6 @@ const ComponentRoom = () => {
       setMetaDt({ totalItems: res.totalItems, PageNumber: res.pageNumber, PageSize: res.pageSize });
     }
   };
-
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '120vh' }}>
@@ -218,7 +211,7 @@ const ComponentRoom = () => {
             ) : (
               <>
                 <Grid item xs={14}>
-                  <MainCard title="CHI TIẾT PHÒNG" codeHighlight sx={{ borderWidth: 2 }}>
+                  <MainCard title="CHI TIẾT PHÒNG VÀ DANH SÁCH GHẾ" codeHighlight sx={{ borderWidth: 2 }}>
                     <Grid container spacing={0} direction="row">
                       <div style={{ width: '100%' }}>
                         <Box
@@ -239,10 +232,8 @@ const ComponentRoom = () => {
                                 <TableHead>
                                   <TableRow>
                                     <TableCell />
-                                    <TableCell align="center">Sức Chứa</TableCell>
-                                    <TableCell align="center">Mô Tả</TableCell>
-                                    <TableCell align="center">Phòng Của Rạp</TableCell>
-                                    <TableCell align="center">Tên Phòng</TableCell>
+                                    <TableCell align="center">Phòng</TableCell>
+                                    <TableCell align="center">Hàng&Danh Sách Ghế</TableCell>
                                   </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -269,16 +260,122 @@ const ComponentRoom = () => {
                                             }}
                                           />
                                         </TableCell>
-                                        <TableCell align="center">{row.capacity}</TableCell>
-                                        <TableCell align="center">{row.description}</TableCell>
-                                        <TableCell align="center">{row.cinemaName}</TableCell>
                                         <TableCell align="center">{row.name}</TableCell>
-                                        <TableCell align="center" sx={{ width: '10%' }}>
+                                        <TableBody>
+                                          {row.dataResponseSeats.length > 0 && (
+                                            <>
+                                              <TableRow>
+                                                <TableCell>Hàng</TableCell>
+                                                <TableCell>Danh Sách Ghế</TableCell>
+                                              </TableRow>
+                                              {/* {['A', 'B', 'C', 'D', 'G', 'H', 'I', 'J', 'Z'].map((line) => {
+                                                const seatsInLine = row.dataResponseSeats.filter((seat) => seat.line === line);
+                                                const boughtSeatsInLine = seatsInLine.filter((seat) => seat.seatStatusName === 'Ghế Hỏng');
+                                                if (seatsInLine.length > 0) {
+                                                  return (
+                                                    <TableRow key={line}>
+                                                      <TableCell>{line}</TableCell>
+                                                      <TableCell>
+                                                        {seatsInLine.map((seat) => (
+                                                          <span key={seat.id}>
+                                                            {boughtSeatsInLine.includes(seat) ? (
+                                                              <span style={{ color: 'red' }}>
+                                                                <span style={{ fontWeight: 'bold' }}>
+                                                                  {line}
+                                                                  {seat.number}
+                                                                </span>
+                                                                -<span style={{ fontStyle: 'italic' }}>{seat.seatTypeName}</span>.
+                                                              </span>
+                                                            ) : (
+                                                              <span>
+                                                                <span style={{ fontWeight: 'bold' }}>
+                                                                  {line}
+                                                                  {seat.number}
+                                                                </span>
+                                                                -<span style={{ fontStyle: 'italic' }}>{seat.seatTypeName}</span>.
+                                                              </span>
+                                                            )}
+                                                          </span>
+                                                        ))}
+                                                      </TableCell>
+                                                    </TableRow>
+                                                  );
+                                                }
+                                                return null;
+                                              })} */}
+                                              {['A', 'B', 'C', 'D', 'G', 'H', 'I', 'J', 'Z'].map((line) => {
+                                                const seatsInLine = row.dataResponseSeats.filter((seat) => seat.line === line);
+                                                const regularSeatsInLine = seatsInLine.filter(
+                                                  (seat) => seat.seatTypeId !== 2 && seat.seatTypeId !== 3
+                                                );
+                                                const vipSeatsInLine = seatsInLine.filter((seat) => seat.seatTypeId === 2);
+                                                const doubleSeatsInLine = seatsInLine.filter((seat) => seat.seatTypeId === 3);
+                                                const boughtRegularSeatsInLine = regularSeatsInLine.filter(
+                                                  (seat) => seat.seatStatusName === 'Ghế Hỏng'
+                                                );
+                                                const boughtVipSeatsInLine = vipSeatsInLine.filter(
+                                                  (seat) => seat.seatStatusName === 'Ghế Hỏng'
+                                                );
+                                                const boughtDoubleSeatsInLine = doubleSeatsInLine.filter(
+                                                  (seat) => seat.seatStatusName === 'Ghế Hỏng'
+                                                );
+
+                                                if (seatsInLine.length > 0) {
+                                                  return (
+                                                    <TableRow key={line}>
+                                                      <TableCell>{line}</TableCell>
+                                                      <TableCell>
+                                                        {regularSeatsInLine.map((seat) => (
+                                                          <span
+                                                            key={seat.id}
+                                                            style={{ color: boughtRegularSeatsInLine.includes(seat) ? 'red' : 'inherit' }}
+                                                          >
+                                                            <span style={{ fontWeight: 'bold' }}>
+                                                              {line}
+                                                              {seat.number}
+                                                            </span>
+                                                            -<span style={{ fontStyle: 'italic' }}>Ghế Thường</span>.
+                                                          </span>
+                                                        ))}
+                                                        {vipSeatsInLine.map((seat) => (
+                                                          <span
+                                                            key={seat.id}
+                                                            style={{ color: boughtVipSeatsInLine.includes(seat) ? '#990000' : '#CC0000' }}
+                                                          >
+                                                            <span style={{ fontWeight: 'bold' }}>
+                                                              {line}
+                                                              {seat.number}
+                                                            </span>
+                                                            -<span style={{ fontStyle: 'italic' }}>Ghế Vip</span>.
+                                                          </span>
+                                                        ))}
+                                                        {doubleSeatsInLine.map((seat) => (
+                                                          <span
+                                                            key={seat.id}
+                                                            style={{
+                                                              color: boughtDoubleSeatsInLine.includes(seat) ? '#003399' : '#0033CC'
+                                                            }}
+                                                          >
+                                                            <span style={{ fontWeight: 'bold' }}>
+                                                              {line}
+                                                              {seat.number}
+                                                            </span>
+                                                            -<span style={{ fontStyle: 'italic' }}>Ghế Đôi</span>.
+                                                          </span>
+                                                        ))}
+                                                      </TableCell>
+                                                    </TableRow>
+                                                  );
+                                                }
+                                                return null;
+                                              })}
+                                            </>
+                                          )}
+                                        </TableBody>
+
+                                        <TableCell>
                                           <IconButton aria-label="edit" size="small">
                                             <EditIcon onClick={() => showDataMovie(row.id)} />
-                                          </IconButton>
-                                          <IconButton aria-label="delete" size="small">
-                                            <DeleteIcon onClick={() => openDeleteModal(row.id)} />
                                           </IconButton>
                                         </TableCell>
                                       </TableRow>
@@ -303,43 +400,26 @@ const ComponentRoom = () => {
                     </Grid>
                   </MainCard>
                 </Grid>
-                <Grid item xs={6}>
-                  <MainCard title="THÊM PHÒNG" codeHighlight sx={{ borderWidth: 2 }}>
+                <Grid item xs={12}>
+                  <MainCard title="THÊM DANH SÁCH GHẾ" codeHighlight sx={{ borderWidth: 2 }}>
                     <Grid container spacing={0}>
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
                         <Grid item xs={2}>
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Sức Chứa
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={3}>
-                          <InputNumber
-                            placeholder="Sức Chứa"
-                            min={50}
-                            max={300}
-                            defaultValue={100}
-                            value={addCapacity}
-                            onChange={(value) => setAddCapacity(value)}
-                          />
-                        </Grid>
-                      </Grid>
-                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
-                        <Grid item xs={2}>
-                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Phòng Của Rạp
+                            Phòng
                           </Typography>
                         </Grid>
                         <Grid item xs={3}>
                           <Select
                             style={{ width: '250px' }}
-                            placeholder="Chọn Rạp"
-                            value={selectedCinema}
+                            placeholder="Chọn Phòng"
+                            value={selectedRoom}
                             onChange={handleSelectCinema}
                             displayEmpty
                           >
-                            {addChoseCinema.map((addChoseCinema) => (
-                              <option key={addChoseCinema.id} value={addChoseCinema.id}>
-                                {addChoseCinema.nameOfCinema}
+                            {addChoseRoom.map((addChoseRoom) => (
+                              <option key={addChoseRoom.id} value={addChoseRoom.id}>
+                                {addChoseRoom.name}
                               </option>
                             ))}
                           </Select>
@@ -348,32 +428,17 @@ const ComponentRoom = () => {
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
                         <Grid item xs={2}>
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Loại Phòng
+                            Số Ghế
                           </Typography>
                         </Grid>
                         <Grid item xs={3}>
                           <InputNumber
-                            placeholder="Loại phòng"
+                            placeholder="Số Ghế"
                             min={1}
-                            max={5}
+                            max={20}
                             defaultValue={1}
-                            value={addType}
-                            onChange={(value) => setAddType(value)}
-                          />
-                        </Grid>
-                      </Grid>
-                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
-                        <Grid item xs={2}>
-                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Tên Phòng
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={3}>
-                          <Input
-                            placeholder="Tên Phòng"
-                            value={addNameRoom}
-                            style={{ width: '400px' }}
-                            onChange={(e) => setAddNameRoom(e.target.value)}
+                            value={addNumberSeat}
+                            onChange={(value) => setAddNumberSeat(value)}
                           />
                         </Grid>
                       </Grid>
@@ -411,120 +476,7 @@ const ComponentRoom = () => {
                     </Grid>
                   </MainCard>
                 </Grid>
-                <Grid item xs={6}>
-                  <MainCard title="CẬP NHẬT PHÒNG" codeHighlight sx={{ borderWidth: 2 }}>
-                    <Grid container spacing={0}>
-                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
-                        <Grid item xs={2}>
-                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Sức Chứa
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={3}>
-                          <InputNumber
-                            placeholder="Sức Chứa"
-                            min={50}
-                            max={300}
-                            defaultValue={100}
-                            value={editCapacity}
-                            onChange={(value) => setEditCapacity(value)}
-                          />
-                        </Grid>
-                      </Grid>
-                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
-                        <Grid item xs={2}>
-                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Phòng Của Rạp
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={3}>
-                          <Select
-                            style={{ width: '250px' }}
-                            value={editSelectedCinema}
-                            placeholder="Chọn Rạp"
-                            onChange={handleEditSelectCinema}
-                            displayEmpty
-                          >
-                            {addChoseCinema.map((addChoseCinema) => (
-                              <option key={addChoseCinema.id} value={addChoseCinema.id}>
-                                {addChoseCinema.nameOfCinema}
-                              </option>
-                            ))}
-                          </Select>
-                        </Grid>
-                      </Grid>
-                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
-                        <Grid item xs={2}>
-                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Loại Phòng
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={3}>
-                          <InputNumber
-                            placeholder="Loại phòng"
-                            min={1}
-                            max={5}
-                            defaultValue={1}
-                            value={editType}
-                            onChange={(value) => setEditType(value)}
-                          />
-                        </Grid>
-                      </Grid>
-                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
-                        <Grid item xs={2}>
-                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Tên Phòng
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={3}>
-                          <Input
-                            placeholder="Tên Phòng"
-                            value={editNameRoom}
-                            style={{ width: '400px' }}
-                            onChange={(e) => setEditNameRoom(e.target.value)}
-                          />
-                        </Grid>
-                      </Grid>
-                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
-                        <Grid item xs={2}>
-                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                            Mô Tả
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={3}>
-                          <TextArea
-                            showCount
-                            maxLength={700}
-                            value={editDescription}
-                            onChange={(e) => setEditDescription(e.target.value)}
-                            placeholder="Mô Tả"
-                            style={{
-                              height: 130,
-                              width: 500,
-                              resize: 'none'
-                            }}
-                          />
-                        </Grid>
-                      </Grid>
-                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
-                        <Grid item xs={2}>
-                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center"></Typography>
-                        </Grid>
-                        <Grid item xs={3}>
-                          {isUpdatingRoom ? (
-                            <Button type="primary" success loading>
-                              Đang Cập Nhật....
-                            </Button>
-                          ) : (
-                            <Button type="primary" success onClick={updateRoom}>
-                              Cập Nhật
-                            </Button>
-                          )}
-                        </Grid>
-                      </Grid>
-                    </Grid>
-                  </MainCard>
-                </Grid>
+                <Grid item xs={6}></Grid>
               </>
             )}
           </Grid>
@@ -544,4 +496,4 @@ const ComponentRoom = () => {
   );
 };
 
-export default ComponentRoom;
+export default ComponentSeat;
