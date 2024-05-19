@@ -26,6 +26,12 @@ const utilities = {
       title: 'Seat',
       type: 'item',
       url: 'seat'
+    },
+    {
+      id: 'myTickets',
+      title: 'Ticket',
+      type: 'item',
+      url: 'ticket'
     }
   ]
 };

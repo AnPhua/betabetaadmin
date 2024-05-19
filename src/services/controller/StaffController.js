@@ -8,6 +8,9 @@ const GetAllMovie = (PageNumber, PageSize) => {
 const GetAllRooms = (pageNumber, pageSize) => {
   return axios.get(`api/admin/GetAllRooms?pageSize=${pageSize}&pageNumber=${pageNumber}`);
 };
+const GetListForTicket = async (pageNumber, pageSize) => {
+  return await axios.get(`api/admin/GetListForTicket?pageSize=${pageSize}&pageNumber=${pageNumber}`);
+};
 const GetMovieById = (movieId) => {
   return axios.get(`api/staff/GetMovieById?movieId=${movieId}`);
 };
@@ -207,8 +210,59 @@ const GetAllCinemaNoPagination = async () => {
 const GetAllRoomNoPagination = async () => {
   return axios.get(`api/admin/GetAllRoomNoPagination`);
 };
+const GetSchedulesNoPagination = async () => {
+  return axios.get(`api/admin/GetAllSchedulesNoPagination`);
+};
 const GetSeatTypes = async () => {
   return axios.get(`api/admin/GetSeatTypes`);
+};
+const AddaListSeats = async (selectedRoom, addlists, setIsLoadingaddList) => {
+  try {
+    setIsLoadingaddList(true);
+    await axios.post(`api/admin/CreateListSeat/${selectedRoom}`, addlists, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    notification.warning({
+      message: 'Cảnh Báo!',
+      description: 'Đã Xảy Ra Lỗi Không Xác Định.'
+    });
+  } catch (error) {
+    notification.warning({
+      message: 'Lỗi',
+      description: error.message + 'Lỗi Server'
+    });
+  } finally {
+    setIsLoadingaddList(false);
+  }
+};
+const AddaListTickets = async (selectedSchedules, setIsLoadingaddList) => {
+  try {
+    setIsLoadingaddList(true);
+    await axios.post(
+      `api/admin/CreateListTicket/${selectedSchedules}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    notification.warning({
+      message: 'Cảnh Báo!',
+      description: 'Đã Xảy Ra Lỗi Không Xác Định.'
+    });
+  } catch (error) {
+    notification.warning({
+      message: 'Lỗi',
+      description: error.message + ' Lỗi Server'
+    });
+  } finally {
+    setIsLoadingaddList(false);
+  }
 };
 export {
   GetAllMovie,
@@ -225,5 +279,9 @@ export {
   DeleteRoom,
   GetAllCinemaNoPagination,
   GetAllRoomNoPagination,
-  GetSeatTypes
+  GetSeatTypes,
+  AddaListSeats,
+  GetListForTicket,
+  GetSchedulesNoPagination,
+  AddaListTickets
 };

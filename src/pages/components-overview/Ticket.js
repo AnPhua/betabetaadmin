@@ -1,85 +1,52 @@
-/* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
-import { Grid, Typography, Box, Paper, TableCell, TableContainer, Table, TableHead, TableRow, TableBody, IconButton } from '@mui/material';
+import { Grid, Typography, Box, Paper, TableCell, TableContainer, Table, TableHead, TableRow, TableBody } from '@mui/material';
 import { Button, notification, Modal, Spin, Select } from 'antd';
 import MainCard from 'components/MainCard';
-import EditIcon from '@mui/icons-material/Edit';
-import { MinusOutlined, PlusOutlined } from '@ant-design/icons';
-import {
-  AddaListSeats,
-  DeleteRoom,
-  GetRoomById,
-  GetAllRooms,
-  GetAllRoomNoPagination,
-  GetSeatTypes
-} from '../../services/controller/StaffController';
+import { AddaListTickets, DeleteRoom, GetListForTicket, GetSchedulesNoPagination } from '../../services/controller/StaffController';
 import { TablePagination, Checkbox } from '@mui/material';
-const ComponentSeat = () => {
+const ComponentTicket = () => {
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [deletemodal, setDeleteModal] = useState(false);
 
   const [idToDelete, setIdToDelete] = useState('');
 
-  // ADD A NEW MOVIE
+  // ADD A LIST TICKETS
   const [addChoseRoom, setChoseRoom] = useState([]);
-  const [addChoseSeatType, setChoseSeatType] = useState([]);
-  const [selectedRoom, setSelectedRoom] = useState(null);
-  const [selectedLine, setSelectedLine] = useState(null);
-  const [selectedSeatType, setSelectedSeatType] = useState(1);
+  const [selectedSchedules, setSelectedSchedules] = useState(null);
   const [isLoadingaddList, setIsLoadingaddList] = useState(false);
-  const [rowSeats, setRowSeats] = useState([{ id: 0, line: '', seatTypeId: null }]);
-  const [showAddButton, setShowAddButton] = useState(true);
-  const [showRemoveButton, setShowRemoveButton] = useState(false);
-  const addSeatRow = () => {
-    if (rowSeats.length < 10) {
-      const newRowId = rowSeats[rowSeats.length - 1].id + 1;
-      setRowSeats([...rowSeats, { id: newRowId, line: '', seatTypeId: null }]);
-      setShowRemoveButton(true);
-      if (rowSeats.length === 9) {
-        setShowAddButton(false);
-      }
-    }
-  };
 
-  const removeSeatRow = () => {
-    if (rowSeats.length > 1) {
-      const newRows = [...rowSeats];
-      newRows.pop();
-      setRowSeats(newRows);
-      setShowAddButton(true);
-      if (newRows.length === 1) {
-        setShowRemoveButton(false);
-      }
-    }
-  };
-  const handleSelectCinema = (selectedOption) => {
-    setSelectedRoom(selectedOption);
-  };
-  const handleSelectLine = (index, selectedOption) => {
-    const newRowSeats = [...rowSeats];
-    newRowSeats[index].line = selectedOption;
-    setRowSeats(newRowSeats);
-  };
+  const formatDateTime = (dateTimeString) => {
+    const dateTime = new Date(dateTimeString);
+    const day = dateTime.getDate();
+    const month = dateTime.getMonth() + 1;
+    const year = dateTime.getFullYear();
+    const hours = dateTime.getHours();
+    const minutes = dateTime.getMinutes();
 
-  const handleSelectSeatType = (index, selectedOption) => {
-    const newRowSeats = [...rowSeats];
-    newRowSeats[index].seatTypeId = selectedOption;
-    setRowSeats(newRowSeats);
+    const formattedDateTime = `${day < 10 ? '0' + day : day}-${month < 10 ? '0' + month : month}-${year} ${hours < 10 ? '0' + hours : hours}:${minutes < 10 ? '0' + minutes : minutes}`;
+
+    return formattedDateTime;
+  };
+  const formatTime = (dateTimeString) => {
+    const dateTime = new Date(dateTimeString);
+    const hours = dateTime.getHours();
+    const minutes = dateTime.getMinutes();
+
+    const formattedDateTime = ` ${hours < 10 ? '0' + hours : hours}:${minutes < 10 ? '0' + minutes : minutes}`;
+
+    return formattedDateTime;
+  };
+  const handleSelectSchedules = (selectedOption) => {
+    setSelectedSchedules(selectedOption);
   };
 
   const addListSeat = async () => {
     let errorMessage = '';
     switch (true) {
-      case !selectedRoom:
-        errorMessage = 'Hãy chọn phòng !';
-        break;
-      case rowSeats.some((seat) => !seat.line):
-        errorMessage = 'Hãy chọn hàng ghế cho tất cả các ghế!';
-        break;
-      case rowSeats.some((seat) => !seat.seatTypeId):
-        errorMessage = 'Hãy chọn loại ghế cho tất cả các ghế!';
+      case !selectedSchedules:
+        errorMessage = 'Hãy chọn suất chiếu !';
         break;
       default:
         break;
@@ -93,88 +60,21 @@ const ComponentSeat = () => {
       return;
     }
 
-    const addlists = rowSeats.map((seat) => ({
-      line: seat.line,
-      seatTypeId: seat.seatTypeId
-    }));
-
-    await AddaListSeats(selectedRoom, addlists, setIsLoadingaddList);
+    await AddaListTickets(selectedSchedules, setIsLoadingaddList);
     await getAllRooms(metadt.PageNumber, metadt.PageSize);
-    setRowSeats([{ id: 0, line: '', seatTypeId: null }]);
-    setSelectedRoom(null);
-    setShowAddButton(true);
-    setShowRemoveButton(false);
+    setSelectedSchedules(null);
   };
 
   //////////////////////////////////////////
   // UPDATE MOVIE
   //const [isUpdatingRoom, setIsUpdatingRoom] = useState(false);
   const showListRoomsandSeatType = async () => {
-    const rescinema = await GetAllRoomNoPagination();
-    const resseattype = await GetSeatTypes();
+    const rescinema = await GetSchedulesNoPagination();
     if (rescinema) {
       setChoseRoom(rescinema);
-      setChoseSeatType(resseattype);
     }
   };
-  const showDataMovie = async (id) => {
-    try {
-      setIdToUpdate(id);
-      const res = await GetRoomById(id);
-      if (res && res.data) {
-        setEditNameRoom(res.data.name);
-        setEditCapacity(res.data.capacity);
-        setEditDescription(res.data.description);
-        setEditType(res.data.type);
-      }
-    } catch (error) {
-      console.error('Error while fetching movie by ID:', error);
-    }
-  };
-  //   const updateRoom = async () => {
-  //     let errorMessage = '';
-  //     switch (true) {
-  //       case !editNameRoom:
-  //         errorMessage = 'Vui lòng nhập tên phòng!';
-  //         break;
-  //       case !editSelectedCinema:
-  //         errorMessage = 'Vui lòng chọn rạp!';
-  //         break;
-  //       case !editDescription:
-  //         errorMessage = 'Vui lòng nhập mô tả!';
-  //         break;
-  //       default:
-  //         break;
-  //     }
 
-  //     if (errorMessage) {
-  //       notification.error({
-  //         message: 'Lỗi',
-  //         description: errorMessage
-  //       });
-  //       return;
-  //     }
-  //     const udroom = {
-  //       roomId: idToUpdate,
-  //       capacity: editCapacity,
-  //       type: editType,
-  //       description: editDescription,
-  //       cinemaId: editSelectedCinema,
-  //       name: editNameRoom,
-  //       request_CreateSeats: null
-  //     };
-
-  //     await UpdateRoom(udroom, setIsUpdatingRoom);
-  //     await getAllRooms(metadt.PageNumber, metadt.PageSize);
-  //     setIdToUpdate('');
-  //     setEditNameRoom('');
-  //     handleEditSelectCinema('');
-  //     setEditSelectedCinema('');
-  //     setEditCapacity(50);
-  //     setEditType(1);
-  //     setEditDescription('');
-  //   };
-  /////////////////////////////////////////
   const [isComponentVisible, setIsComponentVisible] = useState(false);
 
   const [metadt, setMetaDt] = useState({ totalItems: 0, PageNumber: 1, PageSize: 10 });
@@ -218,7 +118,7 @@ const ComponentSeat = () => {
   };
 
   const getAllRooms = async (PageNumber, PageSize) => {
-    let res = await GetAllRooms(PageNumber, PageSize);
+    let res = await GetListForTicket(PageNumber, PageSize);
     if (res && res.data) {
       setRows(res.data);
       setMetaDt({ totalItems: res.totalItems, PageNumber: res.pageNumber, PageSize: res.pageSize });
@@ -236,7 +136,7 @@ const ComponentSeat = () => {
             ) : (
               <>
                 <Grid item xs={12}>
-                  <MainCard title="CHI TIẾT PHÒNG VÀ DANH SÁCH GHẾ" codeHighlight sx={{ borderWidth: 2, height: '1000px' }}>
+                  <MainCard title="CHI TIẾT LỊCH CHIẾU VÀ DANH SÁCH GHẾ" codeHighlight sx={{ borderWidth: 2, height: '1000px' }}>
                     <Grid container spacing={0} direction="row">
                       <div style={{ width: '100%', height: '100%' }}>
                         <Box
@@ -258,7 +158,11 @@ const ComponentSeat = () => {
                                   <TableRow>
                                     <TableCell />
                                     <TableCell align="center">Phòng</TableCell>
-                                    <TableCell align="center" sx={{ width: '1200px' }}>
+                                    <TableCell align="center">Tên Suất Chiếu</TableCell>
+                                    <TableCell align="center">Ghế Trống</TableCell>
+                                    <TableCell align="center">Thời Gian Bắt Đầu</TableCell>
+                                    <TableCell align="center">Thời Gian Kết Thúc</TableCell>
+                                    <TableCell align="center" sx={{ width: '600px' }}>
                                       Hàng&Danh Sách Ghế
                                     </TableCell>
                                   </TableRow>
@@ -287,16 +191,38 @@ const ComponentSeat = () => {
                                             }}
                                           />
                                         </TableCell>
-                                        <TableCell align="center">{row.name}</TableCell>
+                                        <TableCell align="center">{row.roomName}</TableCell>
+                                        <TableCell align="center">
+                                          <span style={{ fontStyle: 'italic', textDecoration: 'underline' }}>
+                                            Phim :{' '}
+                                            <span
+                                              style={{
+                                                color: '#FF4433',
+                                                fontFamily: 'Arial, sans-serif',
+                                                fontSize: '18px',
+                                                fontWeight: 'bold'
+                                              }}
+                                            >
+                                              {row.movieName}
+                                            </span>
+                                          </span>
+                                        </TableCell>
+                                        <TableCell align="center">{row.emptySeat} ghế trống</TableCell>
+                                        <TableCell align="center">
+                                          <span style={{ fontWeight: 'bold' }}>{formatDateTime(row.startAt)}</span>
+                                        </TableCell>
+                                        <TableCell align="center">
+                                          <span style={{ fontWeight: 'bold' }}>{formatDateTime(row.endAt)}</span>
+                                        </TableCell>
                                         <TableBody>
-                                          {row.dataResponseSeats.length > 0 && (
+                                          {row.dataResponsesTicketforsche.length > 0 && (
                                             <>
                                               <TableRow>
                                                 <TableCell>Hàng</TableCell>
-                                                <TableCell>Danh Sách Ghế</TableCell>
+                                                <TableCell>Danh Sách Vé</TableCell>
                                               </TableRow>
                                               {/* {['A', 'B', 'C', 'D', 'G', 'H', 'I', 'J', 'Z'].map((line) => {
-                                                const seatsInLine = row.dataResponseSeats.filter((seat) => seat.line === line);
+                                                const seatsInLine = row.dataResponsesTicketforsche.filter((seat) => seat.line === line);
                                                 const boughtSeatsInLine = seatsInLine.filter((seat) => seat.seatStatusName === 'Ghế Hỏng');
                                                 if (seatsInLine.length > 0) {
                                                   return (
@@ -331,63 +257,59 @@ const ComponentSeat = () => {
                                                 return null;
                                               })} */}
                                               {['A', 'B', 'C', 'D', 'G', 'H', 'I', 'J', 'Z'].map((line) => {
-                                                const seatsInLine = row.dataResponseSeats.filter((seat) => seat.line === line);
+                                                const seatsInLine = row.dataResponsesTicketforsche.filter((seat) => seat.line === line);
                                                 const regularSeatsInLine = seatsInLine.filter(
                                                   (seat) => seat.seatTypeId !== 2 && seat.seatTypeId !== 3
                                                 );
                                                 const vipSeatsInLine = seatsInLine.filter((seat) => seat.seatTypeId === 2);
                                                 const doubleSeatsInLine = seatsInLine.filter((seat) => seat.seatTypeId === 3);
                                                 const boughtRegularSeatsInLine = regularSeatsInLine.filter(
-                                                  (seat) => seat.seatStatusName === 'Ghế Hỏng'
+                                                  (seat) => seat.isActive === false
                                                 );
-                                                const boughtVipSeatsInLine = vipSeatsInLine.filter(
-                                                  (seat) => seat.seatStatusName === 'Ghế Hỏng'
-                                                );
-                                                const boughtDoubleSeatsInLine = doubleSeatsInLine.filter(
-                                                  (seat) => seat.seatStatusName === 'Ghế Hỏng'
-                                                );
+                                                const boughtVipSeatsInLine = vipSeatsInLine.filter((seat) => seat.isActive === false);
+                                                const boughtDoubleSeatsInLine = doubleSeatsInLine.filter((seat) => seat.isActive === false);
 
                                                 if (seatsInLine.length > 0) {
                                                   return (
                                                     <TableRow key={line}>
-                                                      <TableCell>{line}</TableCell>
+                                                      <TableCell>
+                                                        <span style={{ fontWeight: 'bold' }}>{line}</span>
+                                                      </TableCell>
                                                       <TableCell>
                                                         {regularSeatsInLine.map((seat) => (
                                                           <span
                                                             key={seat.id}
-                                                            style={{ color: boughtRegularSeatsInLine.includes(seat) ? 'red' : 'inherit' }}
+                                                            style={{
+                                                              color: boughtRegularSeatsInLine.includes(seat) ? '#FF3131' : 'inherit',
+                                                              textDecoration: boughtRegularSeatsInLine.includes(seat) ? 'line-through' : ''
+                                                            }}
                                                           >
-                                                            <span style={{ fontWeight: 'bold' }}>
-                                                              {line}
-                                                              {seat.number}
-                                                            </span>
-                                                            -<span style={{ fontStyle: 'italic' }}>Ghế Thường</span>.
+                                                            <span style={{ fontWeight: 'bold' }}>{seat.seatName}</span>-
+                                                            <span style={{ fontStyle: 'italic' }}>Ghế Thường</span>.
                                                           </span>
                                                         ))}
                                                         {vipSeatsInLine.map((seat) => (
                                                           <span
                                                             key={seat.id}
-                                                            style={{ color: boughtVipSeatsInLine.includes(seat) ? '#990000' : '#CC0000' }}
+                                                            style={{
+                                                              color: boughtVipSeatsInLine.includes(seat) ? '#FF3131' : '#inherit',
+                                                              textDecoration: boughtRegularSeatsInLine.includes(seat) ? 'line-through' : ''
+                                                            }}
                                                           >
-                                                            <span style={{ fontWeight: 'bold' }}>
-                                                              {line}
-                                                              {seat.number}
-                                                            </span>
-                                                            -<span style={{ fontStyle: 'italic' }}>Ghế Vip</span>.
+                                                            <span style={{ fontWeight: 'bold' }}>{seat.seatName}</span>-
+                                                            <span style={{ fontStyle: 'italic' }}>Ghế Vip</span>.
                                                           </span>
                                                         ))}
                                                         {doubleSeatsInLine.map((seat) => (
                                                           <span
                                                             key={seat.id}
                                                             style={{
-                                                              color: boughtDoubleSeatsInLine.includes(seat) ? '#003399' : '#0033CC'
+                                                              color: boughtDoubleSeatsInLine.includes(seat) ? '#FF3131' : '#inherit',
+                                                              textDecoration: boughtRegularSeatsInLine.includes(seat) ? 'line-through' : ''
                                                             }}
                                                           >
-                                                            <span style={{ fontWeight: 'bold' }}>
-                                                              {line}
-                                                              {seat.number}
-                                                            </span>
-                                                            -<span style={{ fontStyle: 'italic' }}>Ghế Đôi</span>.
+                                                            <span style={{ fontWeight: 'bold' }}>{seat.seatName}</span>-
+                                                            <span style={{ fontStyle: 'italic' }}>Ghế Đôi</span>.
                                                           </span>
                                                         ))}
                                                       </TableCell>
@@ -399,12 +321,6 @@ const ComponentSeat = () => {
                                             </>
                                           )}
                                         </TableBody>
-
-                                        <TableCell>
-                                          <IconButton aria-label="edit" size="small">
-                                            <EditIcon onClick={() => showDataMovie(row.id)} />
-                                          </IconButton>
-                                        </TableCell>
                                       </TableRow>
                                     );
                                   })}
@@ -436,121 +352,18 @@ const ComponentSeat = () => {
                             Phòng
                           </Typography>
                         </Grid>
-                        <Grid item>
-                          <Select style={{ width: '250px' }} placeholder="Chọn Phòng" onChange={handleSelectCinema} displayEmpty>
+                        <Grid item style={{ marginRight: '25px' }}>
+                          <Select style={{ width: '500px' }} placeholder="Chọn Suất Chiếu" onChange={handleSelectSchedules} displayEmpty>
                             {addChoseRoom.map((addChoseRoom) => (
                               <option key={addChoseRoom.id} value={addChoseRoom.id}>
-                                {addChoseRoom.name}
+                                {addChoseRoom.name}-{formatTime(addChoseRoom.startAt)} | {formatTime(addChoseRoom.endAt)}
                               </option>
                             ))}
                           </Select>
                         </Grid>
-                      </Grid>
-                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
-                        {rowSeats.map((row, index) => (
-                          <Grid
-                            container
-                            item
-                            xs={12}
-                            spacing={0}
-                            direction="row"
-                            alignItems="center"
-                            style={{ marginBottom: '10px' }}
-                            key={index}
-                          >
-                            <Grid item style={{ marginLeft: '175px', marginRight: '30px' }}>
-                              <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                                Hàng
-                              </Typography>
-                            </Grid>
-                            <Grid>
-                              <Select value={row.line} style={{ width: 100 }} onChange={(value) => handleSelectLine(index, value)}>
-                                {['A', 'B', 'C', 'D', 'G', 'H', 'I', 'J', 'Z'].map((value) => (
-                                  <option key={value} value={value}>
-                                    {value}
-                                  </option>
-                                ))}
-                              </Select>
-                            </Grid>
-                            <Grid item xs={1}>
-                              <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
-                                Loại Ghế
-                              </Typography>
-                            </Grid>
-                            <Grid item xs={1}>
-                              <Select
-                                value={row.seatTypeId}
-                                style={{ width: '150px' }}
-                                placeholder="Chọn Loại Ghế"
-                                onChange={(value) => handleSelectSeatType(index, value)}
-                                displayEmpty
-                              >
-                                {addChoseSeatType.map((addChoseSeatType) => (
-                                  <option key={addChoseSeatType.id} value={addChoseSeatType.id}>
-                                    {addChoseSeatType.nameType}
-                                  </option>
-                                ))}
-                              </Select>
-                            </Grid>
-                          </Grid>
-                        ))}
-                      </Grid>
-                      <Grid container xs={12}>
-                        {showAddButton ? (
-                          <Grid
-                            item
-                            xs={1}
-                            spacing={0}
-                            direction="row"
-                            alignItems="left"
-                            style={{ marginBottom: '10px', cursor: 'pointer' }}
-                            onClick={addSeatRow}
-                          >
-                            <PlusOutlined />
-                            Thêm ghế
-                          </Grid>
-                        ) : (
-                          <Grid
-                            item
-                            xs={1}
-                            spacing={0}
-                            direction="row"
-                            alignItems="left"
-                            style={{ marginBottom: '10px', cursor: 'pointer' }}
-                            onClick={addSeatRow}
-                          ></Grid>
-                        )}
-                        {showRemoveButton ? (
-                          <Grid
-                            item
-                            spacing={0}
-                            direction="row"
-                            alignItems="right"
-                            style={{ marginBottom: '10px', cursor: 'pointer', marginLeft: '535px' }}
-                            onClick={removeSeatRow}
-                          >
-                            <MinusOutlined />
-                            Xóa ghế
-                          </Grid>
-                        ) : (
-                          <Grid
-                            item
-                            spacing={0}
-                            direction="row"
-                            alignItems="right"
-                            style={{ marginBottom: '10px', cursor: 'pointer', marginLeft: '535px' }}
-                            onClick={removeSeatRow}
-                          ></Grid>
-                        )}
-                      </Grid>
-
-                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
-                        <Grid item xs={2}>
-                          <Typography variant="subtitle1" gutterBottom alignItem="center" align="center"></Typography>
-                        </Grid>
-                        <Grid item xs={3}>
+                        <Grid item sx={2}>
                           <Button type="primary" danger onClick={addListSeat}>
-                            Thêm Danh Sách Ghế
+                            Thêm Danh Sách Vé
                           </Button>
                         </Grid>
                       </Grid>
@@ -577,4 +390,4 @@ const ComponentSeat = () => {
   );
 };
 
-export default ComponentSeat;
+export default ComponentTicket;

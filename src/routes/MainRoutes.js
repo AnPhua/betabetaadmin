@@ -11,6 +11,7 @@ const MovieType = Loadable(lazy(() => import('pages/components-overview/MovieTyp
 const Room = Loadable(lazy(() => import('pages/components-overview/Room')));
 const Schedules = Loadable(lazy(() => import('pages/components-overview/Schedules')));
 const Seats = Loadable(lazy(() => import('pages/components-overview/Seats')));
+const Tickets = Loadable(lazy(() => import('pages/components-overview/Ticket')));
 const MainRoutes = {
   path: '/main',
   element: <MainLayout />,
@@ -42,6 +43,10 @@ const MainRoutes = {
     {
       path: 'seat',
       element: <Seats />
+    },
+    {
+      path: 'ticket',
+      element: <Tickets />
     }
   ]
 };

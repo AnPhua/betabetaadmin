@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
 import { Grid, Typography, Box, Paper, TableCell, TableContainer, Table, TableHead, TableRow, TableBody, IconButton } from '@mui/material';
 import { Input, Button, notification, Modal, Spin, Select, DatePicker } from 'antd';
@@ -27,7 +26,6 @@ const ComponentSchedules = () => {
 
   // ADD A NEW SCHEDULES
   const [addPreDate, setAddPreDate] = useState('');
-  const [addNameSchedules, setAddNameSchedules] = useState('');
   const [addChoseMovie, setChoseMovie] = useState([]);
   const [addChoseRoom, setChoseRoom] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
@@ -67,9 +65,9 @@ const ComponentSchedules = () => {
       case !addPreDate:
         errorMessage = 'Vui lòng chọn lịch chiếu chiếu!';
         break;
-      case !addNameSchedules:
-        errorMessage = 'Vui lòng nhập tên lịch chiếu!';
-        break;
+      // case !addNameSchedules:
+      //   errorMessage = 'Vui lòng nhập tên lịch chiếu!';
+      //   break;
       case !selectedMovie:
         errorMessage = 'Vui lòng chọn Phim!';
         break;
@@ -91,12 +89,12 @@ const ComponentSchedules = () => {
     const addschedules = {
       movieId: selectedMovie,
       startAt: formatDateSendtoServer(addPreDate),
-      name: addNameSchedules,
+      //name: addNameSchedules,
       roomId: selectedRoom
     };
     await CreateSchedule(addschedules, setIsLoadingCreateSchedule);
     await getAllSchedules(metadt.PageNumber, metadt.PageSize);
-    setAddNameSchedules('');
+    //setAddNameSchedules('');
     setSelectedMovie(null);
     setSelectedRoom(null);
     setAddPreDate('');
@@ -368,7 +366,7 @@ const ComponentSchedules = () => {
                           </Select>
                         </Grid>
                       </Grid>
-                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
+                      {/* <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
                         <Grid item xs={3}>
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
                             Tên Lịch Chiếu
@@ -382,7 +380,7 @@ const ComponentSchedules = () => {
                             onChange={(e) => setAddNameSchedules(e.target.value)}
                           />
                         </Grid>
-                      </Grid>
+                      </Grid> */}
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
                         <Grid item xs={3}>
                           <Typography variant="subtitle1" gutterBottom alignItem="center" align="center" style={{ paddingTop: '15px' }}>
@@ -393,7 +391,7 @@ const ComponentSchedules = () => {
                           <Select
                             style={{ width: '350px' }}
                             placeholder="Chọn Phòng"
-                            value={selectedMovie}
+                            value={selectedRoom}
                             onChange={handleSelectRoom}
                             displayEmpty
                           >
@@ -515,14 +513,14 @@ const ComponentSchedules = () => {
         )}
       </div>
       <Modal
-        title="Xóa Đồ Ăn !"
+        title="Xóa Lịch Chiếu !"
         open={deletemodal}
         onOk={handleDeleteClick}
         onCancel={() => setDeleteModal(false)}
         okText="Có"
         cancelText="Không"
       >
-        <p>Bạn Có Chắc Chắn Muốn Xóa Đồ Ăn Này Không?</p>
+        <p>Bạn Có Chắc Chắn Muốn Xóa Lịch Chiếu Này Không?</p>
       </Modal>
     </>
   );
