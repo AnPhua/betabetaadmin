@@ -11,7 +11,7 @@ const DrawerHeader = ({ open }) => {
         <MainCard border={false}>
           <Stack spacing={0} justifyContent="center" alignItems="center" textAlign="center">
             <img src={ad} alt="adminstrator" />
-            <Typography variant="subtitle1">ADMINISTRATOR</Typography>
+            <Typography variant="subtitle1">QUẢN LÍ RẠP PHIM</Typography>
           </Stack>
         </MainCard>
       </Stack>

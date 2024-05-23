@@ -75,7 +75,7 @@ const AuthLogin = () => {
             <Grid container spacing={3}>
               <Grid item xs={12}>
                 <Stack spacing={1}>
-                  <InputLabel htmlFor="username-login">User Name</InputLabel>
+                  <InputLabel htmlFor="username-login">Tên Đăng Nhập</InputLabel>
                   <OutlinedInput
                     id="username-login"
                     type="username"
@@ -94,7 +94,7 @@ const AuthLogin = () => {
               </Grid>
               <Grid item xs={12}>
                 <Stack spacing={1}>
-                  <InputLabel htmlFor="password-login">Password</InputLabel>
+                  <InputLabel htmlFor="password-login">Mật Khẩu</InputLabel>
                   <OutlinedInput
                     fullWidth
                     error={Boolean(touched.password && errors.password)}
@@ -137,10 +137,10 @@ const AuthLogin = () => {
                         size="small"
                       />
                     }
-                    label={<Typography variant="h6">Keep me sign in</Typography>}
+                    label={<Typography variant="h6">Ghi nhớ đăng nhập</Typography>}
                   />
                   <Link variant="h6" component={RouterLink} to="" color="text.primary">
-                    Forgot Password?
+                    Quên Mật Khẩu?
                   </Link>
                 </Stack>
               </Grid>
@@ -161,7 +161,7 @@ const AuthLogin = () => {
                     variant="contained"
                     color="primary"
                   >
-                    Login
+                    Đăng Nhập
                   </Button>
                 </AnimateButton>
               </Grid>

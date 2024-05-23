@@ -1,35 +1,35 @@
 const utilities = {
   id: 'utilities',
-  title: 'AdminController',
+  title: 'Quản Trị Viên',
   type: 'group',
   children: [
     {
       id: 'myBanner',
-      title: 'Banner',
+      title: 'Quảng Cáo',
       type: 'item',
       url: 'banner'
     },
     {
       id: 'mynew',
-      title: 'Food',
+      title: 'Đồ Ăn',
       type: 'item',
       url: 'food'
     },
     {
       id: 'myRoom',
-      title: 'Room',
+      title: 'Danh Sách Phòng',
       type: 'item',
       url: 'room'
     },
     {
       id: 'mySeats',
-      title: 'Seat',
+      title: 'Danh Sách Ghế',
       type: 'item',
       url: 'seat'
     },
     {
       id: 'myTickets',
-      title: 'Ticket',
+      title: 'Vé',
       type: 'item',
       url: 'ticket'
     }

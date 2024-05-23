@@ -126,7 +126,7 @@ const Profile = ({ showModal }) => {
                               <Stack>
                                 <Typography variant="h6">{username}</Typography>
                                 <Typography variant="body2" color="textSecondary">
-                                  Administrator
+                                  Quản Trị Viên
                                 </Typography>
                               </Stack>
                             </Stack>
@@ -146,7 +146,7 @@ const Profile = ({ showModal }) => {
                                   textTransform: 'capitalize'
                                 }}
                                 icon={<UserOutlined style={{ marginBottom: 0, marginRight: '10px' }} />}
-                                label="Profile"
+                                label="Hồ sơ"
                                 {...a11yProps(0)}
                               />
                             </Tabs>
