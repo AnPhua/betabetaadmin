@@ -3,8 +3,15 @@ import React, { useState, useEffect } from 'react';
 import { Grid, Typography, Box, Paper, TableCell, TableContainer, Table, TableHead, TableRow, TableBody } from '@mui/material';
 import { Button, notification, Modal, Spin, Select } from 'antd';
 import MainCard from 'components/MainCard';
-import { AddaListTickets, DeleteRoom, GetListForTicket, GetSchedulesNoPagination } from '../../services/controller/StaffController';
+import {
+  AddaListTickets,
+  DeleteRoom,
+  GetListForTicket,
+  GetSchedulesNoPagination,
+  DeleteTicketsss
+} from '../../services/controller/StaffController';
 import { TablePagination, Checkbox } from '@mui/material';
+
 const ComponentTicket = () => {
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
@@ -16,7 +23,7 @@ const ComponentTicket = () => {
   const [addChoseRoom, setChoseRoom] = useState([]);
   const [selectedSchedules, setSelectedSchedules] = useState(null);
   const [isLoadingaddList, setIsLoadingaddList] = useState(false);
-
+  const [isDeleting, setIsDeleting] = useState(false);
   const formatDateTime = (dateTimeString) => {
     const dateTime = new Date(dateTimeString);
     const day = dateTime.getDate();
@@ -64,8 +71,11 @@ const ComponentTicket = () => {
     await getAllRooms(metadt.PageNumber, metadt.PageSize);
     setSelectedSchedules(null);
   };
+  const deleteListTicket = async () => {
+    await DeleteTicketsss(setIsDeleting);
+    await getAllRooms(metadt.PageNumber, metadt.PageSize);
+  };
 
-  //////////////////////////////////////////
   // UPDATE MOVIE
   //const [isUpdatingRoom, setIsUpdatingRoom] = useState(false);
   const showListRoomsandSeatType = async () => {
@@ -136,7 +146,11 @@ const ComponentTicket = () => {
             ) : (
               <>
                 <Grid item xs={12}>
-                  <MainCard title="CHI TIẾT LỊCH CHIẾU VÀ DANH SÁCH GHẾ" codeHighlight sx={{ borderWidth: 2, height: '1000px' }}>
+                  <MainCard
+                    title="CHI TIẾT LỊCH CHIẾU VÀ DANH SÁCH GHẾ"
+                    codeHighlight
+                    sx={{ borderWidth: 2, height: '1000px', marginTop: '-500px' }}
+                  >
                     <Grid container spacing={0} direction="row">
                       <div style={{ width: '100%', height: '100%' }}>
                         <Box
@@ -343,7 +357,7 @@ const ComponentTicket = () => {
                     </Grid>
                   </MainCard>
                 </Grid>
-                <Grid item xs={12}>
+                <Grid item xs={6}>
                   <MainCard title="THÊM DANH SÁCH GHẾ" codeHighlight sx={{ borderWidth: 2 }}>
                     <Grid container spacing={0}>
                       <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
@@ -353,7 +367,7 @@ const ComponentTicket = () => {
                           </Typography>
                         </Grid>
                         <Grid item style={{ marginRight: '25px' }}>
-                          <Select style={{ width: '500px' }} placeholder="Chọn Suất Chiếu" onChange={handleSelectSchedules} displayEmpty>
+                          <Select style={{ width: '300px' }} placeholder="Chọn Suất Chiếu" onChange={handleSelectSchedules} displayEmpty>
                             {addChoseRoom.map((addChoseRoom) => (
                               <option key={addChoseRoom.id} value={addChoseRoom.id}>
                                 {addChoseRoom.name}-{formatTime(addChoseRoom.startAt)} | {formatTime(addChoseRoom.endAt)}
@@ -370,7 +384,27 @@ const ComponentTicket = () => {
                     </Grid>
                   </MainCard>
                 </Grid>
-                <Grid item xs={6}></Grid>
+                <Grid item xs={6}>
+                  <MainCard title="XÓA DANH SÁCH GHẾ" codeHighlight sx={{ borderWidth: 2 }}>
+                    <Grid container spacing={0}>
+                      <Grid container item xs={12} spacing={0} direction="row" alignItems="center" style={{ marginBottom: '10px' }}>
+                        <Grid item style={{ marginLeft: '175px', marginRight: '25px' }}></Grid>
+                        <Grid item style={{ marginRight: '25px' }}></Grid>
+                        <Grid item sx={2}>
+                          {isDeleting ? (
+                            <Button type="primary" success loading>
+                              Đang Xóa....
+                            </Button>
+                          ) : (
+                            <Button type="primary" success onClick={deleteListTicket}>
+                              Xóa Danh Sách Ghế
+                            </Button>
+                          )}
+                        </Grid>
+                      </Grid>
+                    </Grid>
+                  </MainCard>
+                </Grid>
               </>
             )}
           </Grid>

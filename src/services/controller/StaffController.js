@@ -264,6 +264,31 @@ const AddaListTickets = async (selectedSchedules, setIsLoadingaddList) => {
     setIsLoadingaddList(false);
   }
 };
+const DeleteTicketsss = async (setIsDeleting) => {
+  try {
+    setIsDeleting(true);
+    const response = await axios.delete('api/admin/DeleteListSeat');
+
+    const successMessage = response.data || 'Xóa Danh Sách Vé Thành Công!';
+
+    notification.success({
+      message: 'Thành Công',
+      description: successMessage
+    });
+  } catch (error) {
+    let errorMessage = 'Có lỗi xảy ra!';
+    if (error.response && error.response.data) {
+      errorMessage = error.response.data;
+    }
+    notification.warning({
+      message: 'Lỗi',
+      description: errorMessage
+    });
+  } finally {
+    setIsDeleting(false);
+  }
+};
+
 export {
   GetAllMovie,
   GetMovieById,
@@ -283,5 +308,6 @@ export {
   AddaListSeats,
   GetListForTicket,
   GetSchedulesNoPagination,
-  AddaListTickets
+  AddaListTickets,
+  DeleteTicketsss
 };
